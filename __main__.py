@@ -6,6 +6,7 @@ from constants import PREFIX, EXTENSIONS
 
 client = commands.Bot(command_prefix = PREFIX)
 
+@client.command()
 async def load(context, extension: str):
     try:
         client.load_extension(f"cogs.{extension}")
@@ -13,6 +14,7 @@ async def load(context, extension: str):
     except Exception as error_message:
         await context.send(error_message)
 
+@client.command()
 async def unload(context, extension: str):
     try:
         client.unload_extension(f"cogs.{extension}")
@@ -20,6 +22,7 @@ async def unload(context, extension: str):
     except Exception as error_message:
         await context.send(error_message)
 
+@client.command()
 async def reload(context, extension: str):
     try:
         client.reload_extension(f"cogs.{extension}")
@@ -27,7 +30,8 @@ async def reload(context, extension: str):
     except Exception as error_message:
         await context.send(error_message)
 
-async def update(context, extension: str):
+@client.command()
+async def update(context):
     try:
         for extension in EXTENSIONS:
             client.reload_extension(f"cogs.{extension}")
