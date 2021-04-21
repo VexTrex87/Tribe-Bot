@@ -1,5 +1,6 @@
 PREFIX = "?"
 EXTENSIONS = [
     "events",
-    "bot"
+    "bot",
+    "default"
 ]

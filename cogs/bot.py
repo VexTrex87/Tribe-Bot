@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 import sys
 
-class events(commands.Cog, description = "Bot and server events."):
+class events(commands.Cog):
     def __init__(self, client):
         self.client = client
 
