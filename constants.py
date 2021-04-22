@@ -11,6 +11,7 @@ DEFAULT_GUILD_DATA = {
     "prefix": "?",
     "daily_reward": 10,
     "point_channels": [],
+    "points_per_message": 1,
 }
 
 DEFAULT_USER_DATA = {
