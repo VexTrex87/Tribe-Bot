@@ -27,13 +27,15 @@ class cog(commands.Cog):
     @commands.command(aliases = ["set"])
     async def setsettings(self, context, name, *, value):
         try:
+            guild_data = get_guild_data(context.guild.id)
             if name == "prefix":
-                guild_data = get_guild_data(context.guild.id)
-                guild_data["prefix"] = value
-                save_guild_data(guild_data)
+                guild_data["prefix"] = value       
+            elif name == "daily_reward":
+                guild_data["daily_reward"] = int(value)
             else:
                 await context.send(f"{name} is an invalid setting")
                 return
+            save_guild_data(guild_data)
             await context.send(f"Changed {name} to {value}")
         except Exception as error_message:
             await context.send(error_message)

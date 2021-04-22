@@ -17,7 +17,9 @@ def get_guild_data(guild_id: int):
 
     if not guild_data.get("prefix"):
         guild_data["prefix"] = DEFAULT_GUILD_DATA["prefix"]
-
+    if not guild_data.get("daily_reward"):
+        guild_data["daily_reward"] = DEFAULT_GUILD_DATA["daily_reward"]
+        
     if data_is_new:
         guild_datastore.insert_one(guild_data)
 
@@ -36,7 +38,9 @@ def get_user_data(user_id: int):
         user_data["user_id"] = user_id
 
     if not user_data.get("points"):
-        user_data["prefix"] = DEFAULT_USER_DATA["points"]
+        user_data["points"] = DEFAULT_USER_DATA["points"]
+    if not user_data.get("claimed_daily_reward_time"):
+        user_data["claimed_daily_reward_time"] = DEFAULT_USER_DATA["claimed_daily_reward_time"]
 
     if data_is_new:
         user_datastore.insert_one(user_data)

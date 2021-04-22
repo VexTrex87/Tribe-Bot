@@ -8,10 +8,12 @@ EXTENSIONS = [
 
 DEFAULT_GUILD_DATA = {
     "guild_id": None,
-    "prefix": "?"
+    "prefix": "?",
+    "daily_reward": 10
 }
 
 DEFAULT_USER_DATA = {
     "user_id": None,
     "points": 0,
+    "claimed_daily_reward_time": None,
 }
