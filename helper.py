@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from secrets import MONGO_TOKEN
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
+import discord
 
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
@@ -19,7 +20,9 @@ def get_guild_data(guild_id: int):
         guild_data["prefix"] = DEFAULT_GUILD_DATA["prefix"]
     if not guild_data.get("daily_reward"):
         guild_data["daily_reward"] = DEFAULT_GUILD_DATA["daily_reward"]
-        
+    if not guild_data.get("point_channels"):
+        guild_data["point_channels"] = DEFAULT_GUILD_DATA["point_channels"]
+
     if data_is_new:
         guild_datastore.insert_one(guild_data)
 
@@ -66,3 +69,6 @@ def draw_dictionary(dictionary: dict):
 
     message = message + "```"
     return message
+
+def get_text_channel(text_channels: [], value):
+    return discord.utils.find(lambda channel: channel.name == value, text_channels) or discord.utils.find(lambda channel: channel.mention == value, text_channels) or discord.utils.find(lambda channel: channel.id == int(value), text_channels)
