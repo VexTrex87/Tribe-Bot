@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from secrets import CLIENT_ID
-from helper import get_guild_data, save_guild_data, draw_dictionary
+from helper import get_guild_data, save_guild_data, draw_dictionary, get_text_channel
 
 class cog(commands.Cog):
     def __init__(self, client):
@@ -29,14 +29,32 @@ class cog(commands.Cog):
         try:
             guild_data = get_guild_data(context.guild.id)
             if name == "prefix":
-                guild_data["prefix"] = value       
+                guild_data["prefix"] = value    
+                save_guild_data(guild_data)
+                await context.send(f"Set prefix to {value}")   
             elif name == "daily_reward":
                 guild_data["daily_reward"] = int(value)
+                save_guild_data(guild_data)
+                await context.send(f"Set daily reward to {value}")   
+            elif name == "point_channels":
+                channel = get_text_channel(context.guild.text_channels, value)
+                if channel:
+                    if channel.id in guild_data["point_channels"]:
+                        guild_data["point_channels"].remove(channel.id)
+                        save_guild_data(guild_data)
+                        await context.send(f"Removed {value} from point channels")   
+                    else:
+                        guild_data["point_channels"].append(channel.id)
+                        save_guild_data(guild_data)
+                        await context.send(f"Added {value} to point channels")   
+                else:
+                    await context.send(f"Could not find text channel {value}")
+            elif name == "message_cooldown":
+                guild_data["message_cooldown"] = int(value)
+                save_guild_data(guild_data)
+                await context.send(f"Set message cooldown to {value} second(s)")   
             else:
                 await context.send(f"{name} is an invalid setting")
-                return
-            save_guild_data(guild_data)
-            await context.send(f"Changed {name} to {value}")
         except Exception as error_message:
             await context.send(error_message)
 
