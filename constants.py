@@ -2,7 +2,8 @@ PREFIX = "?"
 EXTENSIONS = [
     "events",
     "bot",
-    "default"
+    "default",
+    "points"
 ]
 
 DEFAULT_GUILD_DATA = {

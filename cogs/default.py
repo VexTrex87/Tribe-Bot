@@ -1,11 +1,10 @@
 import discord
 from discord.ext import commands
-import json
 
 from secrets import CLIENT_ID
 from helper import get_guild_data, save_guild_data, draw_dictionary
 
-class events(commands.Cog):
+class cog(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -49,4 +48,4 @@ class events(commands.Cog):
             await context.send(error_message)
 
 def setup(client):
-    client.add_cog(events(client))
+    client.add_cog(cog(client))
