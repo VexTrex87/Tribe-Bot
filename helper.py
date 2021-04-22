@@ -24,6 +24,8 @@ def get_guild_data(guild_id: int):
         guild_data["point_channels"] = DEFAULT_GUILD_DATA["point_channels"]
     if not guild_data.get("points_per_message"):
         guild_data["points_per_message"] = DEFAULT_GUILD_DATA["points_per_message"]
+    if not guild_data.get("message_cooldown"):
+        guild_data["message_cooldown"] = DEFAULT_GUILD_DATA["message_cooldown"]
 
     if data_is_new:
         guild_datastore.insert_one(guild_data)

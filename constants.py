@@ -12,6 +12,7 @@ DEFAULT_GUILD_DATA = {
     "daily_reward": 10,
     "point_channels": [],
     "points_per_message": 1,
+    "message_cooldown": 10,
 }
 
 DEFAULT_USER_DATA = {

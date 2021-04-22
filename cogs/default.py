@@ -49,6 +49,10 @@ class cog(commands.Cog):
                         await context.send(f"Added {value} to point channels")   
                 else:
                     await context.send(f"Could not find text channel {value}")
+            elif name == "message_cooldown":
+                guild_data["message_cooldown"] = int(value)
+                save_guild_data(guild_data)
+                await context.send(f"Set message cooldown to {value} second(s)")   
             else:
                 await context.send(f"{name} is an invalid setting")
         except Exception as error_message:
