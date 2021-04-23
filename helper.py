@@ -26,6 +26,12 @@ def get_guild_data(guild_id: int):
         guild_data["points_per_message"] = DEFAULT_GUILD_DATA["points_per_message"]
     if not guild_data.get("message_cooldown"):
         guild_data["message_cooldown"] = DEFAULT_GUILD_DATA["message_cooldown"]
+    if not guild_data.get("qotd_channel"):
+        guild_data["qotd_channel"] = DEFAULT_GUILD_DATA["qotd_channel"]
+    if not guild_data.get("aotd_channel"):
+        guild_data["aotd_channel"] = DEFAULT_GUILD_DATA["aotd_channel"]
+    if not guild_data.get("points_per_aotd"):
+        guild_data["points_per_aotd"] = DEFAULT_GUILD_DATA["points_per_aotd"]
 
     if data_is_new:
         guild_datastore.insert_one(guild_data)
@@ -34,6 +40,15 @@ def get_guild_data(guild_id: int):
 
 def save_guild_data(guild_data):
     guild_datastore.update_one({"guild_id": guild_data["guild_id"]}, {"$set": guild_data})
+
+def attach_default_user_data(user_data):
+    if not user_data.get("points"):
+        user_data["points"] = DEFAULT_USER_DATA["points"]
+    if not user_data.get("claimed_daily_reward_time"):
+        user_data["claimed_daily_reward_time"] = DEFAULT_USER_DATA["claimed_daily_reward_time"]
+    if not user_data.get("answered_qotd"):
+        user_data["answered_qotd"] = DEFAULT_USER_DATA["answered_qotd"]
+    return user_data
 
 def get_user_data(user_id: int):
     user_data = user_datastore.find_one({"user_id": user_id}) 
@@ -44,10 +59,7 @@ def get_user_data(user_id: int):
         user_data = DEFAULT_USER_DATA.copy()
         user_data["user_id"] = user_id
 
-    if not user_data.get("points"):
-        user_data["points"] = DEFAULT_USER_DATA["points"]
-    if not user_data.get("claimed_daily_reward_time"):
-        user_data["claimed_daily_reward_time"] = DEFAULT_USER_DATA["claimed_daily_reward_time"]
+    attach_default_user_data(user_data)
 
     if data_is_new:
         user_datastore.insert_one(user_data)
@@ -56,6 +68,16 @@ def get_user_data(user_id: int):
 
 def save_user_data(user_data):
     user_datastore.update_one({"user_id": user_data["user_id"]}, {"$set": user_data})
+
+def get_all_user_data(sort_value: str = None):
+    all_cursor_data = sort_value and user_datastore.find().sort(sort_value, -1) or user_datastore.find({})
+    all_data = []
+
+    for data in all_cursor_data:
+        data = attach_default_user_data(data)
+        all_data.append(data)
+
+    return all_data
 
 def draw_dictionary(dictionary: dict):
     message = "```"
