@@ -53,6 +53,22 @@ class cog(commands.Cog):
                 guild_data["message_cooldown"] = int(value)
                 save_guild_data(guild_data)
                 await context.send(f"Set message cooldown to {value} second(s)")   
+            elif name == "qotd_channel":
+                channel = get_text_channel(context.guild.text_channels, value)
+                if channel:
+                    guild_data["qotd_channel"] = channel.id
+                    save_guild_data(guild_data)
+                    await context.send(f"Set QOTD channel to {value}")   
+                else:
+                    await context.send(f"Could not find text channel {value}")
+            elif name == "aotd_channel":
+                channel = get_text_channel(context.guild.text_channels, value)
+                if channel:
+                    guild_data["aotd_channel"] = channel.id
+                    save_guild_data(guild_data)
+                    await context.send(f"Set AOTD channel to {value}")   
+                else:
+                    await context.send(f"Could not find text channel {value}")
             else:
                 await context.send(f"{name} is an invalid setting")
         except Exception as error_message:
