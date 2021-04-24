@@ -128,7 +128,7 @@ def get_object(objects: [], value):
         except:
             pass
 
-def parse_time(time):
+def parse_to_timestamp(time):
     prefix = int(time[:-1])
     suffix = time[-1:]
 

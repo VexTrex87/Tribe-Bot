@@ -55,6 +55,5 @@ class cog(commands.Cog):
 
             await message.author.send(f"You earned {points_to_give} points for answering the QOTD")
     
-
 def setup(client):
     client.add_cog(cog(client))
