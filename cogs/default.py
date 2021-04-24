@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from secrets import CLIENT_ID
-from helper import get_guild_data, save_guild_data, draw_dictionary, get_text_channel
+from helper import get_guild_data, save_guild_data, draw_dictionary, get_object
 
 class cog(commands.Cog):
     def __init__(self, client):
@@ -37,7 +37,7 @@ class cog(commands.Cog):
                 save_guild_data(guild_data)
                 await context.send(f"Set daily reward to {value}")   
             elif name == "point_channels":
-                channel = get_text_channel(context.guild.text_channels, value)
+                channel = get_object(context.guild.text_channels, value)
                 if channel:
                     if channel.id in guild_data["point_channels"]:
                         guild_data["point_channels"].remove(channel.id)
@@ -54,7 +54,7 @@ class cog(commands.Cog):
                 save_guild_data(guild_data)
                 await context.send(f"Set message cooldown to {value} second(s)")   
             elif name == "qotd_channel":
-                channel = get_text_channel(context.guild.text_channels, value)
+                channel = get_object(context.guild.text_channels, value)
                 if channel:
                     guild_data["qotd_channel"] = channel.id
                     save_guild_data(guild_data)
@@ -62,11 +62,19 @@ class cog(commands.Cog):
                 else:
                     await context.send(f"Could not find text channel {value}")
             elif name == "aotd_channel":
-                channel = get_text_channel(context.guild.text_channels, value)
+                channel = get_object(context.guild.text_channels, value)
                 if channel:
                     guild_data["aotd_channel"] = channel.id
                     save_guild_data(guild_data)
                     await context.send(f"Set AOTD channel to {value}")   
+                else:
+                    await context.send(f"Could not find text channel {value}")
+            elif name == "giveaway_channel":
+                channel = get_object(context.guild.text_channels, value)
+                if channel:
+                    guild_data["giveaway_channel"] = channel.id
+                    save_guild_data(guild_data)
+                    await context.send(f"Set giveaway channel to {value}")   
                 else:
                     await context.send(f"Could not find text channel {value}")
             else:

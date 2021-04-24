@@ -7,15 +7,9 @@ cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
 user_datastore = cluster["database1"]["user"]
 
-def get_guild_data(guild_id: int):
-    guild_data = guild_datastore.find_one({"guild_id": guild_id}) 
-    data_is_new = False
+# guild data
 
-    if not guild_data:
-        data_is_new = True
-        guild_data = DEFAULT_GUILD_DATA.copy()
-        guild_data["guild_id"] = guild_id
-
+def attach_default_guild_data(guild_data):
     if not guild_data.get("prefix"):
         guild_data["prefix"] = DEFAULT_GUILD_DATA["prefix"]
     if not guild_data.get("daily_reward"):
@@ -32,6 +26,22 @@ def get_guild_data(guild_id: int):
         guild_data["aotd_channel"] = DEFAULT_GUILD_DATA["aotd_channel"]
     if not guild_data.get("points_per_aotd"):
         guild_data["points_per_aotd"] = DEFAULT_GUILD_DATA["points_per_aotd"]
+    if not guild_data.get("giveaway_channel"):
+        guild_data["giveaway_channel"] = DEFAULT_GUILD_DATA["giveaway_channel"]
+    if not guild_data.get("giveaways"):
+        guild_data["giveaways"] = DEFAULT_GUILD_DATA["giveaways"]
+    return guild_data
+
+def get_guild_data(guild_id: int):
+    guild_data = guild_datastore.find_one({"guild_id": guild_id}) 
+    data_is_new = False
+
+    if not guild_data:
+        data_is_new = True
+        guild_data = DEFAULT_GUILD_DATA.copy()
+        guild_data["guild_id"] = guild_id
+
+    attach_default_guild_data(guild_data)
 
     if data_is_new:
         guild_datastore.insert_one(guild_data)
@@ -40,6 +50,18 @@ def get_guild_data(guild_id: int):
 
 def save_guild_data(guild_data):
     guild_datastore.update_one({"guild_id": guild_data["guild_id"]}, {"$set": guild_data})
+
+def get_all_guild_data(sort_value: str = None):
+    all_cursor_data = sort_value and guild_datastore.find().sort(sort_value, -1) or guild_datastore.find({})
+    all_data = []
+
+    for data in all_cursor_data:
+        data = attach_default_guild_data(data)
+        all_data.append(data)
+
+    return all_data
+
+# user data
 
 def attach_default_user_data(user_data):
     if not user_data.get("points"):
@@ -79,6 +101,8 @@ def get_all_user_data(sort_value: str = None):
 
     return all_data
 
+# other
+
 def draw_dictionary(dictionary: dict):
     message = "```"
     max_key_length = 0
@@ -96,5 +120,25 @@ def draw_dictionary(dictionary: dict):
     message = message + "```"
     return message
 
-def get_text_channel(text_channels: [], value):
-    return discord.utils.find(lambda channel: channel.name == value, text_channels) or discord.utils.find(lambda channel: channel.mention == value, text_channels) or discord.utils.find(lambda channel: channel.id == int(value), text_channels)
+def get_object(objects: [], value):
+    for obj in objects:
+        try:
+            if obj.name == value or obj.id == int(value):
+                return obj
+        except:
+            pass
+
+def parse_time(time):
+    prefix = int(time[:-1])
+    suffix = time[-1:]
+
+    if suffix == "s":
+        return prefix
+    elif suffix == "m":
+        return prefix * 60
+    elif suffix == "h":
+        return prefix * 60 * 60
+    elif suffix == "d":
+        return prefix * 60 * 60 * 24
+    else:
+        return int(time)
