@@ -5,7 +5,7 @@ from time import time
 from helper import get_guild_data, get_user_data, save_user_data, get_all_user_data
 from constants import QOTD_TAG
 
-class cog(commands.Cog):
+class events(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.recent_messagers = {}
@@ -55,6 +55,5 @@ class cog(commands.Cog):
 
             await message.author.send(f"You earned {points_to_give} points for answering the QOTD")
     
-
 def setup(client):
-    client.add_cog(cog(client))
+    client.add_cog(events(client))

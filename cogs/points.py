@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 from time import time
 
-from helper import get_user_data, save_user_data, get_guild_data, save_guild_data
+from helper import get_user_data, save_user_data, get_guild_data
 
-class cog(commands.Cog):
+class points(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -65,4 +65,4 @@ class cog(commands.Cog):
             await context.send(error_message)
 
 def setup(client):
-    client.add_cog(cog(client))
+    client.add_cog(points(client))

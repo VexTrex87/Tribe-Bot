@@ -3,7 +3,8 @@ EXTENSIONS = [
     "events",
     "bot",
     "default",
-    "points"
+    "points",
+    "giveaway"
 ]
 
 DEFAULT_GUILD_DATA = {
@@ -15,7 +16,9 @@ DEFAULT_GUILD_DATA = {
     "message_cooldown": 10,
     "qotd_channel": None,
     "aotd_channel": None,
-    "points_per_aotd": 50
+    "points_per_aotd": 50,
+    "giveaway_channel": None,
+    "giveaways": [],
 }
 
 DEFAULT_USER_DATA = {
@@ -26,3 +29,5 @@ DEFAULT_USER_DATA = {
 }
 
 QOTD_TAG = "QOTD"
+GIVEAWAY_UPDATE_DELAY = 1
+GIVEAWAY_ENTRY_COST = 1
