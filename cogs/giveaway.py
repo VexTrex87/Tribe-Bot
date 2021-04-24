@@ -1,11 +1,12 @@
 import discord
 from discord.ext import commands, tasks
 from time import time, ctime
+import random
 
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, draw_dictionary
 from constants import GIVEAWAY_UPDATE_DELAY, GIVEAWAY_ENTRY_COST
 
-class cog(commands.Cog):
+class giveaway(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.check_giveaways.start()
@@ -19,9 +20,59 @@ class cog(commands.Cog):
     @tasks.loop(seconds = GIVEAWAY_UPDATE_DELAY)
     async def check_giveaways(self):
         await self.client.wait_until_ready()
+
+        timestamp = round(time())
         for guild_data in get_all_guild_data():
-            for giveaway_info in guild_data["giveaways"]:
-                pass
+            guild = self.client.get_guild(guild_data["guild_id"])
+
+            # get giveaway channel
+            giveaway_channel_id = guild_data.get("giveaway_channel")
+            if not giveaway_channel_id:
+                continue
+
+            giveaway_channel = guild.get_channel(giveaway_channel_id)
+            if not giveaway_channel:
+                continue
+
+            # check giveaways
+            for index, giveaway_info in enumerate(guild_data["giveaways"]):
+                if timestamp >= giveaway_info["endsin"]:
+                    # end giveaway
+                    message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
+                    if len(giveaway_info["member_pool"]) == 0:
+                        await message.edit(content = f"{message.content}\n\nWinner: None")
+                    else:
+                        # get winner
+                        winner = None
+                        winner_id = None
+                        while True:
+                            winner_id = random.choice(giveaway_info["member_pool"])
+                            winner = await guild.fetch_member(winner_id)
+                            if winner:
+                                break
+
+                        # reward winner
+                        winner_user_data = get_user_data(winner_id)
+                        winner_user_data["points"] += giveaway_info["prize"]
+                        save_user_data(winner_user_data)
+                        
+                        await message.edit(content = f"{message.content}\n\nWinner: {winner.mention}")
+                        await winner.send("You won {} points from giveaway {}".format(
+                            giveaway_info["prize"],
+                            giveaway_info["message_id"]
+                        ))
+
+                        # contact losers
+                        for loser_id in giveaway_info["member_pool"]:
+                            if loser_id == winner_id:
+                                continue
+
+                            loser = await guild.fetch_member(loser_id)
+                            if loser:
+                                await loser.send("You did not win giveaway {}".format(giveaway_info["message_id"]))
+
+                    guild_data["giveaways"].pop(index)
+            save_guild_data(guild_data)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -65,7 +116,7 @@ class cog(commands.Cog):
                 return
 
     @commands.command()
-    async def creategiveaway(self, context, endsin, price: int, join_emoji, *, title: str):
+    async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
         guild_data = get_guild_data(context.guild.id)
 
         giveaway_channel_id = guild_data.get("giveaway_channel")
@@ -84,7 +135,7 @@ class cog(commands.Cog):
 
         message = await giveaway_channel.send(draw_dictionary({
             "Title": title,
-            "Price": price,
+            "Prize": prize,
             "Creator": context.author,
             "Ends In": endsin_time_text,
         }))
@@ -92,7 +143,7 @@ class cog(commands.Cog):
 
         guild_data["giveaways"].append({
             "title": title,
-            "price": price,
+            "prize": prize,
             "creator": context.author.id,
             "endsin": endsin_timestamp,
             "join_emoji": join_emoji,
@@ -118,7 +169,7 @@ class cog(commands.Cog):
 
             all_giveaways_text += draw_dictionary({
                 "Title": giveaway_info["title"],
-                "Price": "{} Points".format(giveaway_info["price"]),
+                "Prize": "{} Points".format(giveaway_info["prize"]),
                 "Creator": creator,
                 "Ends In": ctime(giveaway_info["endsin"]),
                 "Message ID": giveaway_info["message_id"],
@@ -138,4 +189,4 @@ class cog(commands.Cog):
         await context.send(f"Could not find giveaway {message_id}")
 
 def setup(client):
-    client.add_cog(cog(client))
+    client.add_cog(giveaway(client))

@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 import sys
 
-class events(commands.Cog):
+class bot(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -29,4 +29,4 @@ class events(commands.Cog):
         sys.exit()
 
 def setup(client):
-    client.add_cog(events(client))
+    client.add_cog(bot(client))

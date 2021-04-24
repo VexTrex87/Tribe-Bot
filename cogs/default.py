@@ -4,7 +4,7 @@ from discord.ext import commands
 from secrets import CLIENT_ID
 from helper import get_guild_data, save_guild_data, draw_dictionary, get_object
 
-class cog(commands.Cog):
+class default(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -87,9 +87,10 @@ class cog(commands.Cog):
         try:
             guild_data = get_guild_data(context.guild.id)
             guild_data.pop("_id")
+            guild_data.pop("giveaways")
             await context.send(draw_dictionary(guild_data))
         except Exception as error_message:
             await context.send(error_message)
 
 def setup(client):
-    client.add_cog(cog(client))
+    client.add_cog(default(client))
