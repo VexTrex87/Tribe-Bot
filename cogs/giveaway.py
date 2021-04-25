@@ -150,6 +150,7 @@ class giveaway(commands.Cog):
             }))
 
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
         response = await context.send(embed = create_embed({
             "title": f"Creating giveaway...",
@@ -272,6 +273,7 @@ class giveaway(commands.Cog):
             }))
 
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def deletegiveaway(self, context, message_id: int):
         response = await context.send(embed = create_embed({
             "title": f"Deleting giveaway {message_id}...",

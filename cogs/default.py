@@ -29,6 +29,7 @@ class default(commands.Cog):
             }))
             
     @commands.command()
+    @commands.check_any(commands.has_permissions(create_instant_invite = True))
     async def invite(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading bot invite link...",
@@ -50,6 +51,7 @@ class default(commands.Cog):
             }))
             
     @commands.command(aliases = ["set"])
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def setsettings(self, context, name, *, value):
         response = await context.send(embed = create_embed({
             "title": f"Setting {name} to {value}...",
@@ -157,6 +159,7 @@ class default(commands.Cog):
             }))
             
     @commands.command(aliases = ["settings"])
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def getsettings(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading settings...",

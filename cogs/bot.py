@@ -10,6 +10,7 @@ class bot(commands.Cog):
         self.client = client
 
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def run(self, context, *, code):
         response = await context.send(embed = create_embed({
             "title": f"Running code...",
@@ -36,6 +37,7 @@ class bot(commands.Cog):
             }))
         
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def cls(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Clearing terminal...",
@@ -57,6 +59,7 @@ class bot(commands.Cog):
             }))
             
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def shutdown(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Shutting down...",
