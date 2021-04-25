@@ -12,6 +12,7 @@ async def get_prefix(client, context):
 client = commands.Bot(command_prefix = get_prefix)
 
 @client.command()
+@commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
 async def load(context, extension: str):
     response = await context.send(embed = create_embed({
         "title": f"Loading {extension}...",
@@ -33,6 +34,7 @@ async def load(context, extension: str):
         }))
 
 @client.command()
+@commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
 async def unload(context, extension: str):
     response = await context.send(embed = create_embed({
         "title": f"Unloading {extension}...",

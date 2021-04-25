@@ -33,6 +33,7 @@ class points(commands.Cog):
             }))
             
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def setpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Changing {member}'s points to {amount}...",
@@ -57,6 +58,7 @@ class points(commands.Cog):
             }))
             
     @commands.command()
+    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     async def addpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Adding {amount} points to {member}...",
