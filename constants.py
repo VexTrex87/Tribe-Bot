@@ -27,6 +27,17 @@ DEFAULT_USER_DATA = {
     "answered_qotd": False,
 }
 
+DEFAULT_GIVEAWAYS_DATA = {
+    "title": "",
+    "prize": 0,
+    "creator": None,
+    "endsin": None,
+    "join_emoji": None,
+    "guild_id": None,
+    "message_id": None,
+    "member_pool": []
+}
+
 QOTD_TAG = "QOTD"
 GIVEAWAY_UPDATE_DELAY = 10
 GIVEAWAY_ENTRY_COST = 1

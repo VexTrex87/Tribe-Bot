@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from time import time, ctime
 import random
 
-from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, draw_dictionary, create_embed
+from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, draw_dictionary, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
 from constants import GIVEAWAY_UPDATE_DELAY, GIVEAWAY_ENTRY_COST
 
 class giveaway(commands.Cog):
@@ -20,10 +20,11 @@ class giveaway(commands.Cog):
     @tasks.loop(seconds = GIVEAWAY_UPDATE_DELAY)
     async def check_giveaways(self):
         await self.client.wait_until_ready()
-
         timestamp = round(time())
-        for guild_data in get_all_guild_data():
-            guild = self.client.get_guild(guild_data["guild_id"])
+
+        for giveaway_info in get_all_giveaways():
+            guild = self.client.get_guild(giveaway_info["guild_id"])
+            guild_data = get_guild_data(guild.id)
 
             # get giveaway channel
             giveaway_channel_id = guild_data.get("giveaway_channel")
@@ -34,73 +35,70 @@ class giveaway(commands.Cog):
             if not giveaway_channel:
                 continue
 
-            # check giveaways
-            for index, giveaway_info in enumerate(guild_data["giveaways"]):
-                if timestamp >= giveaway_info["endsin"]:
-                    # end giveaway
-                    message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
-                    title = giveaway_info["title"]
-                    prize = giveaway_info["prize"]
-                    endsin_time_text = ctime(giveaway_info["endsin"])
+            if timestamp >= giveaway_info["endsin"]:
+                # end giveaway
+                message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
+                title = giveaway_info["title"]
+                prize = giveaway_info["prize"]
+                endsin_time_text = ctime(giveaway_info["endsin"])
 
-                    creator = await guild.fetch_member(giveaway_info["creator"])
-                    creator = creator and creator.mention or "Unknown"
+                creator = await guild.fetch_member(giveaway_info["creator"])
+                creator = creator and creator.mention or "Unknown"
 
-                    if len(giveaway_info["member_pool"]) == 0:
-                        await message.edit(embed = create_embed({
-                            "title": f"ENDED: {title}",
-                            "color": discord.Color.green()
-                        }, {
-                            "Winner": "None",
-                            "Prize": f"{prize} points",
-                            "Creator": creator,
-                            "Ended": endsin_time_text
-                        }))
-                    else:
-                        # get winner
-                        winner = None
-                        winner_id = None
-                        while True:
-                            winner_id = random.choice(giveaway_info["member_pool"])
-                            winner = await guild.fetch_member(winner_id)
-                            if winner:
-                                break
+                if len(giveaway_info["member_pool"]) == 0:
+                    await message.edit(embed = create_embed({
+                        "title": f"ENDED: {title}",
+                        "color": discord.Color.green()
+                    }, {
+                        "Winner": "||None||",
+                        "Prize": f"{prize} points",
+                        "Creator": creator,
+                        "Ended": endsin_time_text
+                    }))
+                else:
+                    # get winner
+                    winner = None
+                    winner_id = None
+                    while True:
+                        winner_id = random.choice(giveaway_info["member_pool"])
+                        winner = await guild.fetch_member(winner_id)
+                        if winner:
+                            break
 
-                        # reward winner
-                        winner_user_data = get_user_data(winner_id)
-                        winner_user_data["points"] += giveaway_info["prize"]
-                        save_user_data(winner_user_data)
-                        
-                        await message.edit(embed = create_embed({
-                            "title": f"ENDED: {title}",
-                            "color": discord.Color.green()
-                        }, {
-                            "Winner": winner.mention,
-                            "Prize": f"{prize} points",
-                            "Creator": creator,
-                            "Ended": endsin_time_text,
-                        }))
+                    # reward winner
+                    winner_user_data = get_user_data(winner_id)
+                    winner_user_data["points"] += giveaway_info["prize"]
+                    save_user_data(winner_user_data)
+                    
+                    await message.edit(embed = create_embed({
+                        "title": f"ENDED: {title}",
+                        "color": discord.Color.green()
+                    }, {
+                        "Winner": f"||{winner.mention}||",
+                        "Prize": f"{prize} points",
+                        "Creator": creator,
+                        "Ended": endsin_time_text,
+                    }))
 
-                        await winner.send(embed = create_embed({
-                            "title": "You won {} points from giveaway {}".format(
-                                giveaway_info["prize"],
-                                giveaway_info["message_id"]
-                            ),
-                        }))
+                    await winner.send(embed = create_embed({
+                        "title": "You won {} points from giveaway {}".format(
+                            giveaway_info["prize"],
+                            giveaway_info["message_id"]
+                        ),
+                    }))
 
-                        # contact losers
-                        for loser_id in giveaway_info["member_pool"]:
-                            if loser_id == winner_id:
-                                continue
+                    # contact losers
+                    for loser_id in giveaway_info["member_pool"]:
+                        if loser_id == winner_id:
+                            continue
 
-                            loser = await guild.fetch_member(loser_id)
-                            if loser:
-                                await loser.send(embed = create_embed({
-                                    "title": "You did not win giveaway {}".format(giveaway_info["message_id"]),
-                                }))
+                        loser = await guild.fetch_member(loser_id)
+                        if loser:
+                            await loser.send(embed = create_embed({
+                                "title": "You did not win giveaway {}".format(giveaway_info["message_id"]),
+                            }))
 
-                    guild_data["giveaways"].pop(index)
-            save_guild_data(guild_data)
+                delete_giveaway(giveaway_info["message_id"])
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -121,36 +119,35 @@ class giveaway(commands.Cog):
             return
 
         # check if user reacted to a giveaway
-        for index, giveaway_info in enumerate(guild_data["giveaways"]):
-            if giveaway_info["message_id"] == message.id:
-                # check giveaway entry
-                if user.id in giveaway_info["member_pool"]:
-                    await user.send(embed = create_embed({
-                        "title": f"You already entered giveaway {message.id}",
-                        "color": discord.Color.red()
-                    }))
-                    return
-
-                user_data = get_user_data(user.id)
-                if user_data["points"] < GIVEAWAY_ENTRY_COST:
-                    await user.send(embed = create_embed({
-                        "title": f"You do not have enough points to join giveaway {message.id}",
-                        "color": discord.Color.red()
-                    }))
-                    return
-
-                # process giveaway entry
-                user_data["points"] -= GIVEAWAY_ENTRY_COST
-                save_user_data(user_data)
-
-                guild_data["giveaways"][index]["member_pool"].append(user.id)
-                save_guild_data(guild_data)
-
+        giveaway_info = get_giveaway(message.id)
+        if giveaway_info:
+            # check giveaway entry
+            if user.id in giveaway_info["member_pool"]:
                 await user.send(embed = create_embed({
-                    "title": f"You joined giveaway {message.id}",
-                    "color": discord.Color.green()
+                    "title": f"You already entered giveaway {message.id}",
+                    "color": discord.Color.red()
                 }))
                 return
+
+            user_data = get_user_data(user.id)
+            if user_data["points"] < GIVEAWAY_ENTRY_COST:
+                await user.send(embed = create_embed({
+                    "title": f"You do not have enough points to join giveaway {message.id}",
+                    "color": discord.Color.red()
+                }))
+                return
+
+            # process giveaway entry
+            user_data["points"] -= GIVEAWAY_ENTRY_COST
+            save_user_data(user_data)
+
+            giveaway_info["member_pool"].append(user.id)
+            save_giveaway(giveaway_info)
+
+            await user.send(embed = create_embed({
+                "title": f"You joined giveaway {message.id}",
+                "color": discord.Color.green()
+            }))
 
     @commands.command()
     async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
@@ -207,16 +204,16 @@ class giveaway(commands.Cog):
             }))
             await message.add_reaction(join_emoji)
 
-            guild_data["giveaways"].append({
+            create_giveaway({
                 "title": title,
                 "prize": prize,
                 "creator": context.author.id,
                 "endsin": endsin_timestamp,
                 "join_emoji": join_emoji,
                 "message_id": message.id,
+                "guild_id": context.guild.id,
                 "member_pool": []
             })
-            save_guild_data(guild_data)
 
             await response.edit(embed = create_embed({
                 "title": f"Created giveaway in {giveaway_channel}",
@@ -247,9 +244,8 @@ class giveaway(commands.Cog):
         }))
         
         try:
-            guild_data = get_guild_data(context.guild.id)
             fields = {}
-            for giveaway_info in guild_data["giveaways"]:
+            for giveaway_info in get_all_giveaways():
                 creator = await context.guild.fetch_member(giveaway_info["creator"])
                 title = giveaway_info["title"]
                 prize = giveaway_info["prize"]
@@ -262,7 +258,7 @@ class giveaway(commands.Cog):
                     if member:
                         member_pool_count += 1
 
-                fields[title] = f"Prize: {prize} points | Creator: {creator} | Ends In: {endsin} | Message ID: {message_id} | Member Pool: {member_pool_count} members"
+                fields[title] = f"Prize: {prize} points | Creator: {creator} | Ends In: {endsin} | Message ID: {message_id} | Member Pool: {member_pool_count} member(s)"
 
             await response.edit(embed = create_embed({
                 "title": f"Giveaways",
@@ -283,33 +279,10 @@ class giveaway(commands.Cog):
         }))
         
         try:
-            guild_data = get_guild_data(context.guild.id)
-            for index, giveaway_info in enumerate(guild_data["giveaways"]):
-                if giveaway_info["message_id"] == message_id:
-                    guild_data["giveaways"].pop(index)
-                    save_guild_data(guild_data)
-
-                    giveaway_channel_id = guild_data.get("giveaway_channel")
-                    if giveaway_channel_id:
-                        giveaway_channel = context.guild.get_channel(giveaway_channel_id)
-                        if giveaway_channel:
-                            try:
-                                message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
-                                if message:
-                                    await message.delete()
-                            except discord.NotFound:
-                                pass # sometimes giveaway message is deleted
-                            except Exception as error_message:
-                                raise Exception(error_message)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Deleted giveaway {message_id}",
-                        "color": discord.Color.green()
-                    }))
-                    return
+            delete_giveaway(message_id)
             await response.edit(embed = create_embed({
-                "title": f"Could not find giveaway {message_id}",
-                "color": discord.Color.red()
+                "title": f"Deleted giveaway {message_id}",
+                "color": discord.Color.green()
             }))
         except Exception as error_message:
             await response.edit(embed = create_embed({

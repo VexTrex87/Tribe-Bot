@@ -6,6 +6,7 @@ import discord
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
 user_datastore = cluster["database1"]["user"]
+giveaways_datastore = cluster["database1"]["giveaways"]
 
 # guild data
 
@@ -100,6 +101,23 @@ def get_all_user_data(sort_value: str = None):
         all_data.append(data)
 
     return all_data
+
+# giveaways data
+
+def get_giveaway(message_id: int):
+    return giveaways_datastore.find_one({"message_id": message_id}) 
+
+def save_giveaway(giveaway_data):
+    giveaways_datastore.update_one({"message_id": giveaway_data["message_id"]}, {"$set": giveaway_data})
+
+def create_giveaway(giveaway_data):
+    giveaways_datastore.insert_one(giveaway_data)
+
+def get_all_giveaways():
+    return giveaways_datastore.find({})
+
+def delete_giveaway(message_id: int):
+    giveaways_datastore.delete_one({"message_id": message_id})
 
 # other
 
