@@ -142,3 +142,25 @@ def parse_to_timestamp(time):
         return prefix * 60 * 60 * 24
     else:
         return int(time)
+
+def create_embed(info: {} = {}, fields: {} = {}):
+    embed = discord.Embed(
+        title = info.get("title") or "",
+        description = info.get("description") or "",
+        colour = info.get("color") or discord.Color.blue(),
+        url = info.get("url") or "",
+    )
+
+    for name, value in fields.items():
+        embed.add_field(name = name, value = value, inline = info.get("inline") or False)
+
+    if info.get("author"):
+        embed.set_author(name = info.author.name, url = info.author.mention, icon_url = info.author.avatar_url)
+    if info.get("footer"):
+        embed.set_footer(text = info.footer)
+    if info.get("image"):
+        embed.set_image(url = info.url)
+    if info.get("thumbnail"):
+        embed.set_thumbnail(url = info.get("thumbnail"))
+    
+    return embed

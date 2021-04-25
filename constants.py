@@ -1,4 +1,3 @@
-PREFIX = "?"
 EXTENSIONS = [
     "events",
     "bot",
