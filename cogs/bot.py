@@ -3,29 +3,66 @@ from discord.ext import commands
 import os
 import sys
 
+from helper import create_embed
+
 class bot(commands.Cog):
     def __init__(self, client):
         self.client = client
 
     @commands.command()
     async def run(self, context, *, code):
+        response = await context.send(embed = create_embed({
+            "title": f"Running code...",
+            "color": discord.Color.gold()
+        }, {
+            "Code": code
+        }))
+        
         try:
             exec(code)
-            await context.send("Ran code")
+            await response.edit(embed = create_embed({
+                "title": f"Ran code",
+                "color": discord.Color.green()
+            }, {
+                "Code": code
+            }))
         except Exception as error_message:
-            await context.send(error_message)
+            await response.edit(embed = create_embed({
+                "title": f"Could not run code",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message,
+                "Code": code
+            }))
         
     @commands.command()
     async def cls(self, context):
+        response = await context.send(embed = create_embed({
+            "title": f"Clearing terminal...",
+            "color": discord.Color.gold()
+        }))
+        
         try:
             os.system("cls" if os.name == "nt" else "clear")
-            await context.send("Terminal cleared")
+            await response.edit(embed = create_embed({
+                "title": f"Terminal cleared",
+                "color": discord.Color.green()
+            }))
         except Exception as error_message:
-            await context.send("Could not clear terminal")
-
+            await response.edit(embed = create_embed({
+                "title": f"Could not clear terminal",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message,
+            }))
+            
     @commands.command()
     async def shutdown(self, context):
-        await context.send("Restarting...")
+        response = await context.send(embed = create_embed({
+            "title": f"Shutting down...",
+            "color": discord.Color.gold()
+        }))
+        
         sys.exit()
 
 def setup(client):

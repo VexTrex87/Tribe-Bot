@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from time import time
 
-from helper import get_guild_data, get_user_data, save_user_data, get_all_user_data
+from helper import get_guild_data, get_user_data, save_user_data, get_all_user_data, create_embed
 from constants import QOTD_TAG
 
 class events(commands.Cog):
@@ -53,7 +53,9 @@ class events(commands.Cog):
             user_data["points"] += points_to_give
             save_user_data(user_data)
 
-            await message.author.send(f"You earned {points_to_give} points for answering the QOTD")
-    
+            await message.author.send(embed = create_embed({
+                "title": f"You earned {points_to_give} points for answering the QOTD",
+            }))
+                
 def setup(client):
     client.add_cog(events(client))

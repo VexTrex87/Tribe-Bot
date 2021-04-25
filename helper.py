@@ -6,6 +6,7 @@ import discord
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
 user_datastore = cluster["database1"]["user"]
+giveaways_datastore = cluster["database1"]["giveaways"]
 
 # guild data
 
@@ -101,6 +102,23 @@ def get_all_user_data(sort_value: str = None):
 
     return all_data
 
+# giveaways data
+
+def get_giveaway(message_id: int):
+    return giveaways_datastore.find_one({"message_id": message_id}) 
+
+def save_giveaway(giveaway_data):
+    giveaways_datastore.update_one({"message_id": giveaway_data["message_id"]}, {"$set": giveaway_data})
+
+def create_giveaway(giveaway_data):
+    giveaways_datastore.insert_one(giveaway_data)
+
+def get_all_giveaways():
+    return giveaways_datastore.find({})
+
+def delete_giveaway(message_id: int):
+    giveaways_datastore.delete_one({"message_id": message_id})
+
 # other
 
 def draw_dictionary(dictionary: dict):
@@ -142,3 +160,25 @@ def parse_to_timestamp(time):
         return prefix * 60 * 60 * 24
     else:
         return int(time)
+
+def create_embed(info: {} = {}, fields: {} = {}):
+    embed = discord.Embed(
+        title = info.get("title") or "",
+        description = info.get("description") or "",
+        colour = info.get("color") or discord.Color.blue(),
+        url = info.get("url") or "",
+    )
+
+    for name, value in fields.items():
+        embed.add_field(name = name, value = value, inline = info.get("inline") or False)
+
+    if info.get("author"):
+        embed.set_author(name = info.author.name, url = info.author.mention, icon_url = info.author.avatar_url)
+    if info.get("footer"):
+        embed.set_footer(text = info.footer)
+    if info.get("image"):
+        embed.set_image(url = info.url)
+    if info.get("thumbnail"):
+        embed.set_thumbnail(url = info.get("thumbnail"))
+    
+    return embed

@@ -2,42 +2,99 @@ import discord
 from discord.ext import commands
 
 from secrets import TOKEN
-from constants import PREFIX, EXTENSIONS
+from constants import EXTENSIONS
+from helper import create_embed, get_guild_data
 
-client = commands.Bot(command_prefix = PREFIX)
+async def get_prefix(client, context):
+    guild_data = get_guild_data(context.guild.id)
+    return guild_data["prefix"]
+
+client = commands.Bot(command_prefix = get_prefix)
 
 @client.command()
 async def load(context, extension: str):
+    response = await context.send(embed = create_embed({
+        "title": f"Loading {extension}...",
+        "color": discord.Color.gold()
+    }))
+
     try:
         client.load_extension(f"cogs.{extension}")
-        await context.send(f"Loaded {extension}")
+        await response.edit(embed = create_embed({
+            "title": f"Loaded {extension}",
+            "color": discord.Color.green()
+        }))
     except Exception as error_message:
-        await context.send(error_message)
+        await response.edit(embed = create_embed({
+            "title": f"Could not load {extension}",
+            "color": discord.Color.red()
+        }, {
+            "Error Message": error_message
+        }))
 
 @client.command()
 async def unload(context, extension: str):
+    response = await context.send(embed = create_embed({
+        "title": f"Unloading {extension}...",
+        "color": discord.Color.gold()
+    }))
+
     try:
         client.unload_extension(f"cogs.{extension}")
-        await context.send(f"Unloaded {extension}")
+        await response.edit(embed = create_embed({
+            "title": f"Unloaded {extension}",
+            "color": discord.Color.green()
+        }))
     except Exception as error_message:
-        await context.send(error_message)
+        await response.edit(embed = create_embed({
+            "title": f"Could not unload {extension}",
+            "color": discord.Color.red()
+        }, {
+            "Error Message": error_message
+        }))
 
 @client.command()
 async def reload(context, extension: str):
+    response = await context.send(embed = create_embed({
+        "title": f"Reloading {extension}...",
+        "color": discord.Color.gold()
+    }))
+
     try:
         client.reload_extension(f"cogs.{extension}")
-        await context.send(f"Reloaded {extension}")
+        await response.edit(embed = create_embed({
+            "title": f"Reloaded {extension}",
+            "color": discord.Color.green()
+        }))
     except Exception as error_message:
-        await context.send(error_message)
+        await response.edit(embed = create_embed({
+            "title": f"Could not reload {extension}",
+            "color": discord.Color.red()
+        }, {
+            "Error Message": error_message
+        }))
 
 @client.command()
 async def update(context):
+    response = await context.send(embed = create_embed({
+        "title": f"Updating bot...",
+        "color": discord.Color.gold()
+    }))
+
     try:
         for extension in EXTENSIONS:
             client.reload_extension(f"cogs.{extension}")
-        await context.send(f"Updated bot")
+        await response.edit(embed = create_embed({
+            "title": f"Updated bot",
+            "color": discord.Color.green()
+        }))
     except Exception as error_message:
-        await context.send(error_message)
+        await response.edit(embed = create_embed({
+            "title": f"Could not update bot",
+            "color": discord.Color.red()
+        }, {
+            "Error Message": error_message
+        }))
 
 for extension in EXTENSIONS:
     client.load_extension(f"cogs.{extension}")
