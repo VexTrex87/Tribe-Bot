@@ -102,7 +102,7 @@ class giveaway(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        if user.bot:
+        if user.bot or not reaction.message.guild:
             return
 
         message = reaction.message
@@ -151,6 +151,7 @@ class giveaway(commands.Cog):
 
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
         response = await context.send(embed = create_embed({
             "title": f"Creating giveaway...",
@@ -238,6 +239,7 @@ class giveaway(commands.Cog):
             }))
             
     @commands.command()
+    @commands.guild_only()
     async def giveaways(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading giveaways...",
@@ -274,6 +276,7 @@ class giveaway(commands.Cog):
 
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def deletegiveaway(self, context, message_id: int):
         response = await context.send(embed = create_embed({
             "title": f"Deleting giveaway {message_id}...",

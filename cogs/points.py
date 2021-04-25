@@ -9,6 +9,7 @@ class points(commands.Cog):
         self.client = client
 
     @commands.command()
+    @commands.guild_only()
     async def points(self, context, member: discord.Member = None):
         if not member:
             member = context.author
@@ -34,6 +35,7 @@ class points(commands.Cog):
             
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def setpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Changing {member}'s points to {amount}...",
@@ -59,6 +61,7 @@ class points(commands.Cog):
             
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def addpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Adding {amount} points to {member}...",
@@ -90,6 +93,7 @@ class points(commands.Cog):
             }))
             
     @commands.command()
+    @commands.guild_only()
     async def daily(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Giving daily points...",

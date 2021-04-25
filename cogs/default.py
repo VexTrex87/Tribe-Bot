@@ -7,8 +7,9 @@ from helper import get_guild_data, save_guild_data, draw_dictionary, get_object,
 class default(commands.Cog):
     def __init__(self, client):
         self.client = client
-
+ 
     @commands.command()
+    @commands.guild_only()
     async def ping(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading ping...",
@@ -30,6 +31,7 @@ class default(commands.Cog):
             
     @commands.command()
     @commands.check_any(commands.has_permissions(create_instant_invite = True))
+    @commands.guild_only()
     async def invite(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading bot invite link...",
@@ -52,6 +54,7 @@ class default(commands.Cog):
             
     @commands.command(aliases = ["set"])
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def setsettings(self, context, name, *, value):
         response = await context.send(embed = create_embed({
             "title": f"Setting {name} to {value}...",
@@ -160,6 +163,7 @@ class default(commands.Cog):
             
     @commands.command(aliases = ["settings"])
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.guild_only()
     async def getsettings(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading settings...",
