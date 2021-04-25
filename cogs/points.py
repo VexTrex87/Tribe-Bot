@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 from time import time
 
-from helper import get_user_data, save_user_data, get_guild_data, create_embed
+from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed
+from constants import MAX_LEADERBOARD_FIELDS
 
 class points(commands.Cog):
     def __init__(self, client):
@@ -130,5 +131,41 @@ class points(commands.Cog):
                 "Error Message": error_message
             }))
             
+    @commands.command()
+    @commands.guild_only()
+    async def leaderboard(self, context):
+        response = await context.send(embed = create_embed({
+            "title": f"Loading leaderboard...",
+            "color": discord.Color.gold()
+        }))
+
+        try:
+            all_user_data = get_all_user_data("points")
+
+            guild_user_data = []
+            for user_data in all_user_data:
+                member = await context.guild.fetch_member(user_data["user_id"])
+                if member:
+                    guild_user_data.append(user_data)
+
+            fields = {}
+            for rank, user_data in enumerate(guild_user_data):
+                points = user_data["points"]
+                fields[f"{rank + 1}. {member.name}"] = f"{points} points"
+                
+                if rank == MAX_LEADERBOARD_FIELDS - 1:
+                    break
+        
+            await response.edit(embed = create_embed({
+                "title": "Leaderboard"
+            }, fields))
+        except Exception as error_message:
+            await response.edit(embed = create_embed({
+                "title": f"Could not load leaderboard",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message
+            }))
+        
 def setup(client):
     client.add_cog(points(client))
