@@ -2,10 +2,13 @@ import discord
 from discord.ext import commands
 
 from secrets import TOKEN
-from constants import EXTENSIONS
+from constants import EXTENSIONS, PREFIX
 from helper import create_embed, get_guild_data
 
 async def get_prefix(client, context):
+    if not context.guild:
+        return PREFIX
+
     guild_data = get_guild_data(context.guild.id)
     return guild_data["prefix"]
 
@@ -13,6 +16,7 @@ client = commands.Bot(command_prefix = get_prefix)
 
 @client.command()
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+@commands.guild_only()
 async def load(context, extension: str):
     response = await context.send(embed = create_embed({
         "title": f"Loading {extension}...",
@@ -35,6 +39,7 @@ async def load(context, extension: str):
 
 @client.command()
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+@commands.guild_only()
 async def unload(context, extension: str):
     response = await context.send(embed = create_embed({
         "title": f"Unloading {extension}...",
@@ -56,6 +61,7 @@ async def unload(context, extension: str):
         }))
 
 @client.command()
+@commands.guild_only()
 async def reload(context, extension: str):
     response = await context.send(embed = create_embed({
         "title": f"Reloading {extension}...",
@@ -77,6 +83,7 @@ async def reload(context, extension: str):
         }))
 
 @client.command()
+@commands.guild_only()
 async def update(context):
     response = await context.send(embed = create_embed({
         "title": f"Updating bot...",

@@ -11,6 +11,14 @@ class events(commands.Cog):
         self.recent_messagers = {}
 
     @commands.Cog.listener()
+    async def on_command_error(self, context, error):
+        if isinstance(error, commands.CheckFailure):
+            await context.send(embed = create_embed({
+                "title": f"Commands must be used in guilds",
+                "color": discord.Color.red()
+            }))
+            
+    @commands.Cog.listener()
     async def on_connect(self):
         print("connected") 
 
@@ -28,7 +36,7 @@ class events(commands.Cog):
         
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author.bot or not message.guild:
             return
 
         guild_data = get_guild_data(message.guild.id)
