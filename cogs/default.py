@@ -84,14 +84,14 @@ class default(commands.Cog):
                         guild_data["point_channels"].remove(channel.id)
                         save_guild_data(guild_data)
                         await response.edit(embed = create_embed({
-                            "title": f"Removed {value} from point channels",
+                            "title": f"Removed {channel.name} from point channels",
                             "color": discord.Color.green()
                         }))
                     else:
                         guild_data["point_channels"].append(channel.id)
                         save_guild_data(guild_data)
                         await response.edit(embed = create_embed({
-                            "title": f"Added {value} to point channels",
+                            "title": f"Added {channel.name} to point channels",
                             "color": discord.Color.green()
                         }))
                 else:
@@ -112,7 +112,7 @@ class default(commands.Cog):
                     guild_data["qotd_channel"] = channel.id
                     save_guild_data(guild_data)
                     await response.edit(embed = create_embed({
-                        "title": f"Set QOTD channel to {value}",
+                        "title": f"Set QOTD channel to {channel.name}",
                         "color": discord.Color.green()
                     }))
                 else:
@@ -126,7 +126,7 @@ class default(commands.Cog):
                     guild_data["giveaway_channel"] = channel.id
                     save_guild_data(guild_data)
                     await response.edit(embed = create_embed({
-                        "title": f"Set giveaway channel to {value}",
+                        "title": f"Set giveaway channel to {channel.name}",
                         "color": discord.Color.green()
                     }))
                 else:
@@ -180,8 +180,30 @@ class default(commands.Cog):
             if guild_data.get("guild_id"):
                 guild_data.pop("guild_id")
 
+            if guild_data.get("point_channels"):
+                point_channels = []
+                for channel_id in guild_data["point_channels"]:
+                    channel = context.guild.get_channel(channel_id)
+                    if channel:
+                        point_channels.append(channel.mention)
+                guild_data["point_channels"] = ", ".join(point_channels)
+
+            if guild_data.get("qotd_channel"):
+                channel = context.guild.get_channel(channel_id)
+                if channel:
+                    guild_data["qotd_channel"] = channel.mention
+
+            if guild_data.get("giveaway_channel"):
+                channel = context.guild.get_channel(channel_id)
+                if channel:
+                    guild_data["giveaway_channel"] = channel.mention
+
+            if guild_data.get("aotd_keywords"):
+                guild_data["aotd_keywords"] = ", ".join(guild_data["aotd_keywords"])
+
             await response.edit(embed = create_embed({
                 "title": f"Guild Settings",
+                "inline": True,
             }, guild_data))
         except Exception as error_message:
             await response.edit(embed = create_embed({

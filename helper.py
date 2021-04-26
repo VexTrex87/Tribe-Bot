@@ -125,7 +125,7 @@ def draw_dictionary(dictionary: dict):
 def get_object(objects: [], value):
     for obj in objects:
         try:
-            if obj.name == value or obj.id == int(value):
+            if obj.name == value or value == obj.mention or obj.id == int(value):
                 return obj
         except:
             pass
