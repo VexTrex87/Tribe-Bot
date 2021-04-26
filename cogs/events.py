@@ -3,7 +3,6 @@ from discord.ext import commands
 from time import time
 
 from helper import get_guild_data, get_user_data, save_user_data, get_all_user_data, create_embed
-from constants import QOTD_TAG
 
 class events(commands.Cog):
     def __init__(self, client):
@@ -50,20 +49,26 @@ class events(commands.Cog):
             user_data["points"] += guild_data["points_per_message"]
             save_user_data(user_data)
 
-        if message.channel.id == guild_data["qotd_channel"] and QOTD_TAG.lower() in message.content.lower():
+        qotd_channel = message.guild.get_channel(guild_data["qotd_channel"])
+        if message.channel == qotd_channel:
             for user_data in get_all_user_data():
                 user_data["answered_qotd"] = False
                 save_user_data(user_data)
-        elif message.channel.id == guild_data["aotd_channel"] and not user_data["answered_qotd"]:
-            points_to_give = guild_data["points_per_aotd"]
-            
-            user_data["answered_qotd"] = True
-            user_data["points"] += points_to_give
-            save_user_data(user_data)
 
-            await message.author.send(embed = create_embed({
-                "title": f"You earned {points_to_give} points for answering the QOTD",
-            }))
+        for aotd_keyword in guild_data["aotd_keywords"]:
+            if aotd_keyword in message.content.lower() or qotd_channel.mention in message.content.lower():
+                if not user_data["answered_qotd"]:
+                    points_to_give = guild_data["points_per_aotd"]
+
+                    user_data["answered_qotd"] = True
+                    user_data["points"] += points_to_give
+                    save_user_data(user_data)
+
+                    await message.author.send(embed = create_embed({
+                        "title": f"You earned {points_to_give} points for answering the QOTD",
+                    }))
+                    
+                    break
                 
 def setup(client):
     client.add_cog(events(client))
