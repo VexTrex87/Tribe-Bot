@@ -150,6 +150,13 @@ class default(commands.Cog):
                         "title": f"Added {value} to AOTD keywords",
                         "color": discord.Color.green()
                     }))
+            elif name == "giveaway_entry_cost":
+                guild_data["giveaway_entry_cost"] = int(value)
+                save_guild_data(guild_data)
+                await response.edit(embed = create_embed({
+                    "title": f"Set giveaway entry cost to {value}",
+                    "color": discord.Color.green()
+                }))
             else:
                 await response.edit(embed = create_embed({
                     "title": f"{name} is an invalid setting",

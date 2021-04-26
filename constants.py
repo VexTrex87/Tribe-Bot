@@ -17,6 +17,7 @@ DEFAULT_GUILD_DATA = {
     "aotd_keywords": ["qotd", "aotd"],
     "points_per_aotd": 50,
     "giveaway_channel": None,
+    "giveaway_entry_cost": 1,
 }
 
 DEFAULT_USER_DATA = {
@@ -38,6 +39,5 @@ DEFAULT_GIVEAWAYS_DATA = {
 }
 
 GIVEAWAY_UPDATE_DELAY = 10
-GIVEAWAY_ENTRY_COST = 1
 PREFIX = "?"
 MAX_LEADERBOARD_FIELDS = 10
