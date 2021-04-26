@@ -14,10 +14,9 @@ DEFAULT_GUILD_DATA = {
     "points_per_message": 1,
     "message_cooldown": 10,
     "qotd_channel": None,
-    "aotd_channel": None,
+    "aotd_keywords": ["qotd", "aotd"],
     "points_per_aotd": 50,
     "giveaway_channel": None,
-    "giveaways": [],
 }
 
 DEFAULT_USER_DATA = {
@@ -38,7 +37,6 @@ DEFAULT_GIVEAWAYS_DATA = {
     "member_pool": []
 }
 
-QOTD_TAG = "QOTD"
 GIVEAWAY_UPDATE_DELAY = 10
 GIVEAWAY_ENTRY_COST = 1
 PREFIX = "?"

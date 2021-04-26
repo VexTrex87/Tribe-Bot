@@ -120,20 +120,6 @@ class default(commands.Cog):
                         "title": f"Could not find text channel {value}",
                         "color": discord.Color.red()
                     }))
-            elif name == "aotd_channel":
-                channel = get_object(context.guild.text_channels, value)
-                if channel:
-                    guild_data["aotd_channel"] = channel.id
-                    save_guild_data(guild_data)
-                    await response.edit(embed = create_embed({
-                        "title": f"Set AOTD channel to {value}",
-                        "color": discord.Color.green()
-                    }))
-                else:
-                    await response.edit(embed = create_embed({
-                        "title": f"Could not find text channel {value}",
-                        "color": discord.Color.red()
-                    }))
             elif name == "giveaway_channel":
                 channel = get_object(context.guild.text_channels, value)
                 if channel:
@@ -147,6 +133,22 @@ class default(commands.Cog):
                     await response.edit(embed = create_embed({
                         "title": f"Could not find text channel {value}",
                         "color": discord.Color.red()
+                    }))
+            elif name == "aotd_keywords":
+                value = value.lower()
+                if value in guild_data["aotd_keywords"]:
+                    guild_data["aotd_keywords"].remove(value)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Removed {value} from AOTD keywords",
+                        "color": discord.Color.green()
+                    }))
+                else:
+                    guild_data["aotd_keywords"].append(value)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Added {value} to AOTD keywords",
+                        "color": discord.Color.green()
                     }))
             else:
                 await response.edit(embed = create_embed({
@@ -172,9 +174,12 @@ class default(commands.Cog):
         
         try:
             guild_data = get_guild_data(context.guild.id)
-            guild_data.pop("_id")
-            guild_data.pop("guild_id")
-            guild_data.pop("giveaways")
+
+            if guild_data.get("_id"):
+                guild_data.pop("_id")
+            if guild_data.get("guild_id"):
+                guild_data.pop("guild_id")
+
             await response.edit(embed = create_embed({
                 "title": f"Guild Settings",
             }, guild_data))

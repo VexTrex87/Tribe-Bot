@@ -11,27 +11,11 @@ giveaways_datastore = cluster["database1"]["giveaways"]
 # guild data
 
 def attach_default_guild_data(guild_data):
-    if not guild_data.get("prefix"):
-        guild_data["prefix"] = DEFAULT_GUILD_DATA["prefix"]
-    if not guild_data.get("daily_reward"):
-        guild_data["daily_reward"] = DEFAULT_GUILD_DATA["daily_reward"]
-    if not guild_data.get("point_channels"):
-        guild_data["point_channels"] = DEFAULT_GUILD_DATA["point_channels"]
-    if not guild_data.get("points_per_message"):
-        guild_data["points_per_message"] = DEFAULT_GUILD_DATA["points_per_message"]
-    if not guild_data.get("message_cooldown"):
-        guild_data["message_cooldown"] = DEFAULT_GUILD_DATA["message_cooldown"]
-    if not guild_data.get("qotd_channel"):
-        guild_data["qotd_channel"] = DEFAULT_GUILD_DATA["qotd_channel"]
-    if not guild_data.get("aotd_channel"):
-        guild_data["aotd_channel"] = DEFAULT_GUILD_DATA["aotd_channel"]
-    if not guild_data.get("points_per_aotd"):
-        guild_data["points_per_aotd"] = DEFAULT_GUILD_DATA["points_per_aotd"]
-    if not guild_data.get("giveaway_channel"):
-        guild_data["giveaway_channel"] = DEFAULT_GUILD_DATA["giveaway_channel"]
-    if not guild_data.get("giveaways"):
-        guild_data["giveaways"] = DEFAULT_GUILD_DATA["giveaways"]
-    return guild_data
+    new_guild_data = DEFAULT_GUILD_DATA.copy()
+    for key in new_guild_data.keys():
+        if guild_data.get(key):
+            new_guild_data[key] = guild_data[key]
+    return new_guild_data
 
 def get_guild_data(guild_id: int):
     guild_data = guild_datastore.find_one({"guild_id": guild_id}) 
@@ -42,7 +26,7 @@ def get_guild_data(guild_id: int):
         guild_data = DEFAULT_GUILD_DATA.copy()
         guild_data["guild_id"] = guild_id
 
-    attach_default_guild_data(guild_data)
+    guild_data = attach_default_guild_data(guild_data)
 
     if data_is_new:
         guild_datastore.insert_one(guild_data)
