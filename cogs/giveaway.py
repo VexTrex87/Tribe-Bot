@@ -4,7 +4,7 @@ from time import time, ctime
 import random
 
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, draw_dictionary, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
-from constants import GIVEAWAY_UPDATE_DELAY, GIVEAWAY_ENTRY_COST
+from constants import GIVEAWAY_UPDATE_DELAY
 
 class giveaway(commands.Cog):
     def __init__(self, client):
@@ -130,7 +130,7 @@ class giveaway(commands.Cog):
                 return
 
             user_data = get_user_data(user.id)
-            if user_data["points"] < GIVEAWAY_ENTRY_COST:
+            if user_data["points"] < guild_data["giveaway_entry_cost"]:
                 await user.send(embed = create_embed({
                     "title": f"You do not have enough points to join giveaway {message.id}",
                     "color": discord.Color.red()
@@ -138,7 +138,7 @@ class giveaway(commands.Cog):
                 return
 
             # process giveaway entry
-            user_data["points"] -= GIVEAWAY_ENTRY_COST
+            user_data["points"] -= guild_data["giveaway_entry_cost"]
             save_user_data(user_data)
 
             giveaway_info["member_pool"].append(user.id)
