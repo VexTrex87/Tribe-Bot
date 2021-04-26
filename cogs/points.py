@@ -52,6 +52,10 @@ class points(commands.Cog):
                 "title": f"Set {member}'s points to {amount}",
                 "color": discord.Color.green()
             }))
+
+            await member.send(embed = create_embed({
+                "title": f"{context.author} set your points to {amount}",
+            }))
         except Exception as error_message:
             await response.edit(embed = create_embed({
                 "title": f"Could not set {member}'s points to {amount}",
@@ -84,6 +88,10 @@ class points(commands.Cog):
             await response.edit(embed = create_embed({
                 "title": f"Gave {amount} points to {member}",
                 "color": discord.Color.green()
+            }))
+
+            await member.send(embed = create_embed({
+                "title": f"{context.author} gave you {amount} points",
             }))
         except Exception as error_message:
             await response.edit(embed = create_embed({
