@@ -160,7 +160,8 @@ class default(commands.Cog):
                 }))
             elif name == "roblox_groups":
                 group_id = int(value)
-                if not await get_group_name(group_id):
+                group_name = await get_group_name(group_id)
+                if not group_name:
                     await response.edit(embed = create_embed({
                         "title": f"Could not find roblox group {group_id}",
                         "color": discord.Color.red()
@@ -171,14 +172,14 @@ class default(commands.Cog):
                     guild_data["roblox_groups"].remove(group_id)
                     save_guild_data(guild_data)
                     await response.edit(embed = create_embed({
-                        "title": f"Removed {group_id} from roblox groups",
+                        "title": f"Removed {group_name} ({group_id}) from roblox groups",
                         "color": discord.Color.green()
                     }))
                 else:
                     guild_data["roblox_groups"].append(group_id)
                     save_guild_data(guild_data)
                     await response.edit(embed = create_embed({
-                        "title": f"Added {group_id} to roblox groups",
+                        "title": f"Added {group_name} ({group_id}) to roblox groups",
                         "color": discord.Color.green()
                     }))
             else:
@@ -224,7 +225,7 @@ class default(commands.Cog):
                 for group_id in guild_data["roblox_groups"]:
                     group_name = await get_group_name(group_id)
                     if group_name:
-                        roblox_groups.append(group_name)
+                        roblox_groups.append(f"{group_name} ({group_id})")
                 guild_data["roblox_groups"] = ", ".join(roblox_groups)
 
             if guild_data.get("qotd_channel"):
