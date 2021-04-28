@@ -46,3 +46,4 @@ MAX_LEADERBOARD_FIELDS = 10
 
 GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
 USER_GROUPS_URL = "https://groups.roblox.com/v2/users/USER_ID/groups/roles"
+USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
