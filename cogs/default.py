@@ -1,9 +1,11 @@
 import discord
 from discord.ext import commands
+import os
 
-from secrets import CLIENT_ID
 from helper import get_guild_data, save_guild_data, draw_dictionary, get_object, create_embed
 from cogs.roblox import get_group_name
+
+CLIENT_ID = os.getenv("TB_CLIENT_ID")
 
 class default(commands.Cog):
     def __init__(self, client):

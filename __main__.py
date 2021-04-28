@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
+import os
 
-from secrets import TOKEN
 from constants import EXTENSIONS, PREFIX
 from helper import create_embed, get_guild_data
 
@@ -12,6 +12,7 @@ async def get_prefix(client, context):
     guild_data = get_guild_data(context.guild.id)
     return guild_data["prefix"]
 
+TOKEN = os.getenv("TB_TOKEN")
 client = commands.Bot(command_prefix = get_prefix)
 
 @client.command()

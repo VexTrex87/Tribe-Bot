@@ -1,10 +1,11 @@
 from pymongo import MongoClient
 import discord
 import json
+import os
 
-from secrets import MONGO_TOKEN
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
 
+MONGO_TOKEN = os.getenv("TB_MONGO_TOKEN")
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
 user_datastore = cluster["database1"]["user"]
