@@ -20,6 +20,7 @@ DEFAULT_GUILD_DATA = {
     "giveaway_channel": None,
     "giveaway_entry_cost": 1,
     "roblox_groups": [],
+    "group_award": 500,
 }
 
 DEFAULT_USER_DATA = {
@@ -28,6 +29,7 @@ DEFAULT_USER_DATA = {
     "claimed_daily_reward_time": None,
     "answered_qotd": False,
     "roblox_account_id": None,
+    "roblox_groups": []
 }
 
 DEFAULT_GIVEAWAYS_DATA = {
@@ -96,3 +98,4 @@ ROBLOX_KEYWORDS = [
     "yogurt",
 ]
 ACCEPT_EMOJI = "✅"
+GROUPS_UPDATE_DELAY = 60

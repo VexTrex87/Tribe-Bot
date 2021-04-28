@@ -51,6 +51,12 @@ def get_all_guild_data(sort_value: str = None):
 # user data
 
 def attach_default_user_data(user_data):
+    new_user_data = DEFAULT_USER_DATA.copy()
+    for key in new_user_data.keys():
+        if user_data.get(key):
+            new_user_data[key] = user_data[key]
+    return new_user_data
+
     if not user_data.get("points"):
         user_data["points"] = DEFAULT_USER_DATA["points"]
     if not user_data.get("claimed_daily_reward_time"):
