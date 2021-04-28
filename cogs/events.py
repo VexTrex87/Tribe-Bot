@@ -69,6 +69,6 @@ class events(commands.Cog):
                     }))
                     
                     break
-                
+
 def setup(client):
     client.add_cog(events(client))

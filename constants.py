@@ -27,6 +27,7 @@ DEFAULT_USER_DATA = {
     "points": 0,
     "claimed_daily_reward_time": None,
     "answered_qotd": False,
+    "roblox_account_id": None,
 }
 
 DEFAULT_GIVEAWAYS_DATA = {
@@ -47,4 +48,51 @@ MAX_LEADERBOARD_FIELDS = 10
 GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
 USER_GROUPS_URL = "https://groups.roblox.com/v2/users/USER_ID/groups/roles"
 USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
+USER_STATUS_URL = "https://users.roblox.com/v1/users/USER_ID/status"
 USERS_URL = "https://users.roblox.com/v1/usernames/users"
+
+ROBLOX_KEYWORD_COUNT = 5
+ROBLOX_KEYWORDS = [
+    "apple",
+    "avocado",
+    "almond",
+    "bacon",
+    "beef",
+    "berry",
+    "bread",
+    "burrito",
+    "cake",
+    "caramel",
+    "cereal",
+    "cheese",
+    "chicken",
+    "chocolate",
+    "cupcake",
+    "candy",
+    "chips",
+    "coffee",
+    "doughnut",
+    "egg",
+    "grape",
+    "honey",
+    "ham",
+    "hamburger",
+    "jelly",
+    "juice",
+    "kiwi",
+    "lemon",
+    "muffin",
+    "milk",
+    "oatmeal",
+    "peach",
+    "pear",
+    "pineapple",
+    "pizza",
+    "pie",
+    "sandwich",
+    "taco",
+    "waffle",
+    "water",
+    "yogurt",
+]
+ACCEPT_EMOJI = "✅"
