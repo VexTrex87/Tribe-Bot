@@ -1,7 +1,9 @@
 from pymongo import MongoClient
+import discord
+import json
+
 from secrets import MONGO_TOKEN
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
-import discord
 
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
@@ -49,6 +51,12 @@ def get_all_guild_data(sort_value: str = None):
 # user data
 
 def attach_default_user_data(user_data):
+    new_user_data = DEFAULT_USER_DATA.copy()
+    for key in new_user_data.keys():
+        if user_data.get(key):
+            new_user_data[key] = user_data[key]
+    return new_user_data
+
     if not user_data.get("points"):
         user_data["points"] = DEFAULT_USER_DATA["points"]
     if not user_data.get("claimed_daily_reward_time"):
@@ -166,3 +174,6 @@ def create_embed(info: {} = {}, fields: {} = {}):
         embed.set_thumbnail(url = info.get("thumbnail"))
     
     return embed
+
+def convert_dictionary_to_tree(dictionary: dict):
+    return json.dumps(dictionary, indent = 4)
