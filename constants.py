@@ -3,7 +3,8 @@ EXTENSIONS = [
     "bot",
     "default",
     "points",
-    "giveaway"
+    "giveaway",
+    "roblox"
 ]
 
 DEFAULT_GUILD_DATA = {
@@ -18,6 +19,7 @@ DEFAULT_GUILD_DATA = {
     "points_per_aotd": 50,
     "giveaway_channel": None,
     "giveaway_entry_cost": 1,
+    "roblox_groups": [],
 }
 
 DEFAULT_USER_DATA = {
@@ -41,3 +43,5 @@ DEFAULT_GIVEAWAYS_DATA = {
 GIVEAWAY_UPDATE_DELAY = 10
 PREFIX = "?"
 MAX_LEADERBOARD_FIELDS = 10
+
+GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"

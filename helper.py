@@ -1,7 +1,9 @@
 from pymongo import MongoClient
+import discord
+import json
+
 from secrets import MONGO_TOKEN
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
-import discord
 
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster["database1"]["guild"]
@@ -166,3 +168,6 @@ def create_embed(info: {} = {}, fields: {} = {}):
         embed.set_thumbnail(url = info.get("thumbnail"))
     
     return embed
+
+def convert_dictionary_to_tree(dictionary: dict):
+    return json.dumps(dictionary, indent = 4)

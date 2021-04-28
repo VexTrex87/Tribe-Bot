@@ -3,6 +3,7 @@ from discord.ext import commands
 
 from secrets import CLIENT_ID
 from helper import get_guild_data, save_guild_data, draw_dictionary, get_object, create_embed
+from cogs.roblox import get_group_name
 
 class default(commands.Cog):
     def __init__(self, client):
@@ -157,6 +158,29 @@ class default(commands.Cog):
                     "title": f"Set giveaway entry cost to {value}",
                     "color": discord.Color.green()
                 }))
+            elif name == "roblox_groups":
+                group_id = int(value)
+                if not await get_group_name(group_id):
+                    await response.edit(embed = create_embed({
+                        "title": f"Could not find roblox group {group_id}",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                if group_id in guild_data["roblox_groups"]:
+                    guild_data["roblox_groups"].remove(group_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Removed {group_id} from roblox groups",
+                        "color": discord.Color.green()
+                    }))
+                else:
+                    guild_data["roblox_groups"].append(group_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Added {group_id} to roblox groups",
+                        "color": discord.Color.green()
+                    }))
             else:
                 await response.edit(embed = create_embed({
                     "title": f"{name} is an invalid setting",
@@ -194,6 +218,14 @@ class default(commands.Cog):
                     if channel:
                         point_channels.append(channel.mention)
                 guild_data["point_channels"] = ", ".join(point_channels)
+
+            if guild_data.get("roblox_groups"):
+                roblox_groups = []
+                for group_id in guild_data["roblox_groups"]:
+                    group_name = await get_group_name(group_id)
+                    if group_name:
+                        roblox_groups.append(group_name)
+                guild_data["roblox_groups"] = ", ".join(roblox_groups)
 
             if guild_data.get("qotd_channel"):
                 channel = context.guild.get_channel(channel_id)
