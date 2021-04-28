@@ -3,7 +3,7 @@ from discord.ext import commands
 import aiohttp
 
 from helper import create_embed, convert_dictionary_to_tree
-from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL
+from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USERS_URL
 
 async def get_group_name(group_id: int):
     url = GROUP_INFO_URL.replace("GROUP_ID", str(group_id))
@@ -32,6 +32,17 @@ async def get_username(user_id: int):
             if response.status == 200:
                 response_data = await response.json()
                 return response_data["name"]
+
+async def get_user_id(username: str):
+    data = {"usernames": [username], "excludeBannedUsers": False}
+    async with aiohttp.ClientSession() as session:
+        async with session.post(USERS_URL, data = data) as response:
+            if response.status == 200:
+                response_data = await response.json()
+                user = response_data["data"][0]
+                if not user:
+                    return None
+                return user["name"]
 
 class roblox(commands.Cog):
     def __init__(self, client):
