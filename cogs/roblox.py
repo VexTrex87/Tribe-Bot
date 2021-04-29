@@ -66,7 +66,7 @@ def generate_random_keywords():
     random_keywords = random.sample(ROBLOX_KEYWORDS, ROBLOX_KEYWORD_COUNT)
     return " ".join(random_keywords)
 
-class roblox(commands.Cog):
+class roblox(commands.Cog, description = "Commands for viewing and linking roblox accounts."):
     def __init__(self, client):
         self.client = client
         self.players = {}
@@ -194,7 +194,7 @@ class roblox(commands.Cog):
                     self.players.pop(place_id)
 
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Links a roblox account to a discord account.")
     async def linkroblox(self, context, *, username: str):
         response = await context.send(embed = create_embed({
             "title": f"Linking roblox account {username}...",
@@ -256,7 +256,7 @@ class roblox(commands.Cog):
             })
 
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Views the linked roblox account for the discord account.")
     async def robloxaccount(self, context, member: discord.Member = None):
         if not member:
             member = context.author
