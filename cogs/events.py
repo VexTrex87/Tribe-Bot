@@ -4,7 +4,7 @@ from time import time
 
 from helper import get_guild_data, get_user_data, save_user_data, get_all_user_data, create_embed
 
-class events(commands.Cog):
+class events(commands.Cog. description = "Default events."):
     def __init__(self, client):
         self.client = client
         self.recent_messagers = {}
