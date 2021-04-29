@@ -6,7 +6,7 @@ import random
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
 from constants import GIVEAWAY_UPDATE_DELAY
 
-class giveaway(commands.Cog):
+class giveaway(commands.Cog, description = "Commands for managing and entering giveaways."):
     def __init__(self, client):
         self.client = client
         self.check_giveaways.start()
@@ -149,7 +149,7 @@ class giveaway(commands.Cog):
                 "color": discord.Color.green()
             }))
 
-    @commands.command()
+    @commands.command(description = "Creates a giveaway.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
@@ -239,7 +239,7 @@ class giveaway(commands.Cog):
             }))
             
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Lists the current guild's giveaways.")
     async def giveaways(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading giveaways...",
@@ -274,7 +274,7 @@ class giveaway(commands.Cog):
                 "Error Message": error_message,
             }))
 
-    @commands.command()
+    @commands.command(description = "Deletes a giveaway.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def deletegiveaway(self, context, message_id: int):
