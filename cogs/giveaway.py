@@ -238,8 +238,8 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 "Join Emoji": join_emoji,
             }))
             
-    @commands.command()
-    @commands.guild_only(description = "Lists the current guild's giveaways.")
+    @commands.command(description = "Lists the current guild's giveaways.")
+    @commands.guild_only()
     async def giveaways(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading giveaways...",

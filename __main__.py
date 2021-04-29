@@ -108,6 +108,8 @@ async def update(context):
             "Error Message": error_message
         }))
 
+client.remove_command("help")
+
 for extension in EXTENSIONS:
     client.load_extension(f"cogs.{extension}")
 

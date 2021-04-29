@@ -9,8 +9,8 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
     def __init__(self, client):
         self.client = client
 
-    @commands.command()
-    @commands.guild_only(description = "Retrieves the member's points.")
+    @commands.command(description = "Retrieves the member's points.")
+    @commands.guild_only()
     async def points(self, context, member: discord.Member = None):
         if not member:
             member = context.author
@@ -34,9 +34,9 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command()
+    @commands.command(description = "Changes a member's points.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
-    @commands.guild_only(description = "Changes a member's points.", brief = "administrator")
+    @commands.guild_only()
     async def setpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Changing {member}'s points to {amount}...",
@@ -64,9 +64,9 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command()
+    @commands.command(description = "Adds a member's points.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
-    @commands.guild_only(description = "Adds a member's points.", brief = "administrator")
+    @commands.guild_only()
     async def addpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Adding {amount} points to {member}...",
@@ -101,8 +101,8 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command()
-    @commands.guild_only(description = "Gives the members points. Can only be used after an interval set by the guild.")
+    @commands.command(description = "Gives the members points. Can only be used after an interval set by the guild.")
+    @commands.guild_only()
     async def daily(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Giving daily points...",
@@ -139,8 +139,8 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command()
-    @commands.guild_only(description = "Retrieves the members with the most points in the guild.")
+    @commands.command(description = "Retrieves the members with the most points in the guild.")
+    @commands.guild_only()
     async def leaderboard(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading leaderboard...",

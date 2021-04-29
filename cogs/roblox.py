@@ -193,8 +193,8 @@ class roblox(commands.Cog, description = "Commands for viewing and linking roblo
                 if len(self.players[place_id]) == 0:
                     self.players.pop(place_id)
 
-    @commands.command()
-    @commands.guild_only(description = "Links a roblox account to a discord account.")
+    @commands.command(description = "Links a roblox account to a discord account.")
+    @commands.guild_only()
     async def linkroblox(self, context, *, username: str):
         response = await context.send(embed = create_embed({
             "title": f"Linking roblox account {username}...",
@@ -255,8 +255,8 @@ class roblox(commands.Cog, description = "Commands for viewing and linking roblo
                 "Error Message": error_message
             })
 
-    @commands.command()
-    @commands.guild_only(description = "Views the linked roblox account for the discord account.")
+    @commands.command(description = "Views the linked roblox account for the discord account.")
+    @commands.guild_only()
     async def robloxaccount(self, context, member: discord.Member = None):
         if not member:
             member = context.author

@@ -150,3 +150,6 @@ def create_embed(info: {} = {}, fields: {} = {}):
         embed.set_thumbnail(url = info.get("thumbnail"))
     
     return embed
+
+def list_to_string(list: []):
+    return ", ".join(list)
