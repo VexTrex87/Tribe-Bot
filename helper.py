@@ -58,14 +58,6 @@ def attach_default_user_data(user_data):
             new_user_data[key] = user_data[key]
     return new_user_data
 
-    if not user_data.get("points"):
-        user_data["points"] = DEFAULT_USER_DATA["points"]
-    if not user_data.get("claimed_daily_reward_time"):
-        user_data["claimed_daily_reward_time"] = DEFAULT_USER_DATA["claimed_daily_reward_time"]
-    if not user_data.get("answered_qotd"):
-        user_data["answered_qotd"] = DEFAULT_USER_DATA["answered_qotd"]
-    return user_data
-
 def get_user_data(user_id: int):
     user_data = user_datastore.find_one({"user_id": user_id}) 
     data_is_new = False
@@ -75,7 +67,7 @@ def get_user_data(user_id: int):
         user_data = DEFAULT_USER_DATA.copy()
         user_data["user_id"] = user_id
 
-    attach_default_user_data(user_data)
+    user_data = attach_default_user_data(user_data)
 
     if data_is_new:
         user_datastore.insert_one(user_data)

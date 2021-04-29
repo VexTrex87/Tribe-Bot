@@ -13,7 +13,9 @@ async def get_prefix(client, context):
     return guild_data["prefix"]
 
 TOKEN = os.getenv("TB_TOKEN")
-client = commands.Bot(command_prefix = get_prefix)
+intents = discord.Intents.default()
+intents.members = True
+client = commands.Bot(command_prefix = get_prefix, intents = intents)
 
 @client.command()
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))

@@ -5,7 +5,7 @@ import random
 import asyncio
 
 from helper import create_embed, convert_dictionary_to_tree, get_user_data, save_user_data, get_all_guild_data, get_all_user_data
-from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL
+from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY
 
 async def get_group_name(group_id: int):
     url = GROUP_INFO_URL.replace("GROUP_ID", str(group_id))
@@ -69,14 +69,17 @@ def generate_random_keywords():
 class roblox(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.check_groups.start()
         self.players = {}
+        self.check_groups.start()
+        self.check_games.start()
 
     def cog_unload(self):
         self.check_groups.cancel()
+        self.check_games.cancel()
 
     def cog_load(self):
         self.check_groups.start()
+        self.check_games.start()
 
     @tasks.loop(seconds = GROUPS_UPDATE_DELAY)
     async def check_groups(self):
@@ -134,6 +137,40 @@ class roblox(commands.Cog):
                     await user.send(embed = create_embed({
                         "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
                     }))
+
+    @tasks.loop(seconds = GAMES_UPDATE_DELAY)
+    async def check_games(self):
+        await self.client.wait_until_ready()
+
+        # loop through each guild
+        for guild_data in get_all_guild_data():
+            # check if guild exists
+            guild = self.client.get_guild(guild_data["guild_id"])
+            if not guild:
+                continue
+
+            # go through each guild user
+            async for user in guild.fetch_members(limit = None):
+                user_data = get_user_data(user.id)
+
+                # check if user has a roblox account
+                roblox_user_id = user_data["roblox_account_id"]
+                if not roblox_user_id:
+                    continue
+
+                if not await get_username(roblox_user_id):
+                    continue
+
+                # check if user is playing a game
+                for game_id, player_ids in self.players.items():
+                    if str(roblox_user_id) in player_ids:
+                        # check if game is a guild game
+                        if int(game_id) in guild_data["roblox_games"]:
+                            user_data["points"] += guild_data["game_award"]
+                            print("Gave {} {} points for playing {}".format(user, guild_data["game_award"], game_id))
+                            break
+
+                save_user_data(user_data)
 
     @commands.Cog.listener()
     async def on_message(self, message):

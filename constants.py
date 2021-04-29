@@ -21,7 +21,8 @@ DEFAULT_GUILD_DATA = {
     "giveaway_entry_cost": 1,
     "roblox_groups": [],
     "group_award": 500,
-    "roblox_games": []
+    "roblox_games": [],
+    "game_award": 10,
 }
 
 DEFAULT_USER_DATA = {
@@ -54,6 +55,10 @@ USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
 USER_STATUS_URL = "https://users.roblox.com/v1/users/USER_ID/status"
 USERS_URL = "https://users.roblox.com/v1/usernames/users"
 
+ACCEPT_EMOJI = "✅"
+GROUPS_UPDATE_DELAY = 60
+GAMES_UPDATE_DELAY = 15
+REQUESTS_CHANNEL = 834455396667359242
 ROBLOX_KEYWORD_COUNT = 5
 ROBLOX_KEYWORDS = [
     "apple",
@@ -98,7 +103,3 @@ ROBLOX_KEYWORDS = [
     "water",
     "yogurt",
 ]
-ACCEPT_EMOJI = "✅"
-GROUPS_UPDATE_DELAY = 60
-
-REQUESTS_CHANNEL = 834455396667359242
