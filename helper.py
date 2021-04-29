@@ -106,23 +106,6 @@ def delete_giveaway(message_id: int):
 
 # other
 
-def draw_dictionary(dictionary: dict):
-    message = "```"
-    max_key_length = 0
-
-    for key in dictionary.keys():
-        if len(key) > max_key_length:
-            max_key_length = len(key)
-    max_key_length += 5
-
-    for key, value in dictionary.items():
-        spaces = max_key_length - len(key)
-        tab = " " * spaces
-        message = message + f"{key}{tab}{value}\n"
-
-    message = message + "```"
-    return message
-
 def get_object(objects: [], value):
     for obj in objects:
         try:
@@ -167,6 +150,3 @@ def create_embed(info: {} = {}, fields: {} = {}):
         embed.set_thumbnail(url = info.get("thumbnail"))
     
     return embed
-
-def convert_dictionary_to_tree(dictionary: dict):
-    return json.dumps(dictionary, indent = 4)

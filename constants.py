@@ -45,8 +45,8 @@ DEFAULT_GIVEAWAYS_DATA = {
     "member_pool": []
 }
 
-GIVEAWAY_UPDATE_DELAY = 10
 PREFIX = "?"
+GIVEAWAY_UPDATE_DELAY = 10
 MAX_LEADERBOARD_FIELDS = 10
 
 GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
