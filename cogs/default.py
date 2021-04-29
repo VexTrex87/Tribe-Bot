@@ -184,6 +184,22 @@ class default(commands.Cog):
                         "title": f"Added {group_name} ({group_id}) to roblox groups",
                         "color": discord.Color.green()
                     }))
+            elif name == "roblox_games":
+                game_id = int(value)
+                if game_id in guild_data["roblox_games"]:
+                    guild_data["roblox_games"].remove(game_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Removed {game_id} from roblox games",
+                        "color": discord.Color.green()
+                    }))
+                else:
+                    guild_data["roblox_games"].append(game_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Added {game_id} from roblox games",
+                        "color": discord.Color.green()
+                    }))
             else:
                 await response.edit(embed = create_embed({
                     "title": f"{name} is an invalid setting",

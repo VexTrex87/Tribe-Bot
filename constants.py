@@ -21,6 +21,7 @@ DEFAULT_GUILD_DATA = {
     "giveaway_entry_cost": 1,
     "roblox_groups": [],
     "group_award": 500,
+    "roblox_games": []
 }
 
 DEFAULT_USER_DATA = {
