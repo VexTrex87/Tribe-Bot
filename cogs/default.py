@@ -7,11 +7,11 @@ from cogs.roblox import get_group_name
 
 CLIENT_ID = os.getenv("TB_CLIENT_ID")
 
-class default(commands.Cog):
+class default(commands.Cog, description = "Default commands and commands for settings."):
     def __init__(self, client):
         self.client = client
  
-    @commands.command()
+    @commands.command(description = "Retrieves the bot's connection to Discord.")
     @commands.guild_only()
     async def ping(self, context):
         response = await context.send(embed = create_embed({
@@ -32,7 +32,7 @@ class default(commands.Cog):
                 "Error Message": error_message
             }))
             
-    @commands.command()
+    @commands.command(description = "Retrieves an invite link for the bot.", brief = "create instant invite")
     @commands.check_any(commands.has_permissions(create_instant_invite = True))
     @commands.guild_only()
     async def invite(self, context):
@@ -55,7 +55,7 @@ class default(commands.Cog):
                 "Error Message": error_message
             }))
             
-    @commands.command(aliases = ["set"])
+    @commands.command(aliases = ["set"], description = "Changes guild settings.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def setsettings(self, context, name, *, value):
@@ -273,7 +273,7 @@ class default(commands.Cog):
                 "Error Message": error_message
             }))
             
-    @commands.command(aliases = ["settings"])
+    @commands.command(aliases = ["settings"], description = "Retrieves guild settings.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def getsettings(self, context):
