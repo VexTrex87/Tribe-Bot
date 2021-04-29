@@ -5,12 +5,12 @@ from time import time
 from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed
 from constants import MAX_LEADERBOARD_FIELDS
 
-class points(commands.Cog):
+class points(commands.Cog, description = "Commands for managing, earning, and viewing points."):
     def __init__(self, client):
         self.client = client
 
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Retrieves the member's points.")
     async def points(self, context, member: discord.Member = None):
         if not member:
             member = context.author
@@ -36,7 +36,7 @@ class points(commands.Cog):
             
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
-    @commands.guild_only()
+    @commands.guild_only(description = "Changes a member's points.", brief = "administrator")
     async def setpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Changing {member}'s points to {amount}...",
@@ -66,7 +66,7 @@ class points(commands.Cog):
             
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
-    @commands.guild_only()
+    @commands.guild_only(description = "Adds a member's points.", brief = "administrator")
     async def addpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
             "title": f"Adding {amount} points to {member}...",
@@ -102,7 +102,7 @@ class points(commands.Cog):
             }))
             
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Gives the members points. Can only be used after an interval set by the guild.")
     async def daily(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Giving daily points...",
@@ -140,7 +140,7 @@ class points(commands.Cog):
             }))
             
     @commands.command()
-    @commands.guild_only()
+    @commands.guild_only(description = "Retrieves the members with the most points in the guild.")
     async def leaderboard(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading leaderboard...",
