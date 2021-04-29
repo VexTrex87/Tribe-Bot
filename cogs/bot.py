@@ -5,11 +5,11 @@ import sys
 
 from helper import create_embed
 
-class bot(commands.Cog):
+class bot(commands.Cog, description = "Commands for managing the bot."):
     def __init__(self, client):
         self.client = client
 
-    @commands.command()
+    @commands.command(description = "Runs code through the bot.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def run(self, context, *, code):
@@ -37,7 +37,7 @@ class bot(commands.Cog):
                 "Code": code
             }))
         
-    @commands.command()
+    @commands.command(description = "Clears the terminal.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def cls(self, context):
@@ -60,7 +60,7 @@ class bot(commands.Cog):
                 "Error Message": error_message,
             }))
             
-    @commands.command()
+    @commands.command(description = "Shuts the bot down. If the bot is running on a server, then it will automatically restart.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def shutdown(self, context):
