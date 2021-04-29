@@ -102,6 +102,21 @@ class default(commands.Cog):
                         "title": f"Could not find text channel {value}",
                         "color": discord.Color.red()
                     }))
+            elif name == "points_per_message":
+                value = int(value)
+                if value < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"{value} must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                guild_data["points_per_message"] = int(value)
+                save_guild_data(guild_data)
+                await response.edit(embed = create_embed({
+                    "title": f"Set points per message to {value}",
+                    "color": discord.Color.green()
+                }))
             elif name == "message_cooldown":
                 guild_data["message_cooldown"] = int(value)
                 save_guild_data(guild_data)
@@ -123,20 +138,6 @@ class default(commands.Cog):
                         "title": f"Could not find text channel {value}",
                         "color": discord.Color.red()
                     }))
-            elif name == "giveaway_channel":
-                channel = get_object(context.guild.text_channels, value)
-                if channel:
-                    guild_data["giveaway_channel"] = channel.id
-                    save_guild_data(guild_data)
-                    await response.edit(embed = create_embed({
-                        "title": f"Set giveaway channel to {channel.name}",
-                        "color": discord.Color.green()
-                    }))
-                else:
-                    await response.edit(embed = create_embed({
-                        "title": f"Could not find text channel {value}",
-                        "color": discord.Color.red()
-                    }))
             elif name == "aotd_keywords":
                 value = value.lower()
                 if value in guild_data["aotd_keywords"]:
@@ -150,8 +151,37 @@ class default(commands.Cog):
                     guild_data["aotd_keywords"].append(value)
                     save_guild_data(guild_data)
                     await response.edit(embed = create_embed({
-                        "title": f"Added {value} to AOTD keywords",
+                        "title": f"Added {value} from AOTD keywords",
                         "color": discord.Color.green()
+                    }))
+            elif name == "points_per_aotd":
+                value = int(value)
+                if value < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"{value} must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                guild_data["points_per_aotd"] = int(value)
+                save_guild_data(guild_data)
+                await response.edit(embed = create_embed({
+                    "title": f"Set points per AOTD to {value}",
+                    "color": discord.Color.green()
+                }))            
+            elif name == "giveaway_channel":
+                channel = get_object(context.guild.text_channels, value)
+                if channel:
+                    guild_data["giveaway_channel"] = channel.id
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Set giveaway channel to {channel.name}",
+                        "color": discord.Color.green()
+                    }))
+                else:
+                    await response.edit(embed = create_embed({
+                        "title": f"Could not find text channel {value}",
+                        "color": discord.Color.red()
                     }))
             elif name == "giveaway_entry_cost":
                 guild_data["giveaway_entry_cost"] = int(value)
@@ -184,6 +214,52 @@ class default(commands.Cog):
                         "title": f"Added {group_name} ({group_id}) to roblox groups",
                         "color": discord.Color.green()
                     }))
+            elif name == "group_award":
+                value = int(value)
+                if value < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"{value} must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                guild_data["group_award"] = int(value)
+                save_guild_data(guild_data)
+                await response.edit(embed = create_embed({
+                    "title": f"Set group award to {value}",
+                    "color": discord.Color.green()
+                }))            
+            elif name == "roblox_games":
+                game_id = int(value)
+                if game_id in guild_data["roblox_games"]:
+                    guild_data["roblox_games"].remove(game_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Removed {game_id} from roblox games",
+                        "color": discord.Color.green()
+                    }))
+                else:
+                    guild_data["roblox_games"].append(game_id)
+                    save_guild_data(guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Added {game_id} from roblox games",
+                        "color": discord.Color.green()
+                    }))
+            elif name == "game_award":
+                value = int(value)
+                if value < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"{value} must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                guild_data["game_award"] = int(value)
+                save_guild_data(guild_data)
+                await response.edit(embed = create_embed({
+                    "title": f"Set game award to {value}",
+                    "color": discord.Color.green()
+                }))            
             else:
                 await response.edit(embed = create_embed({
                     "title": f"{name} is an invalid setting",
