@@ -17,7 +17,7 @@ intents = discord.Intents.default()
 intents.members = True
 client = commands.Bot(command_prefix = get_prefix, intents = intents)
 
-@client.command()
+@client.command(description = "Loads a cog.", brief = "administrator")
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
 @commands.guild_only()
 async def load(context, extension: str):
@@ -40,7 +40,7 @@ async def load(context, extension: str):
             "Error Message": error_message
         }))
 
-@client.command()
+@client.command(description = "Unloads a cog.", brief = "administrator")
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
 @commands.guild_only()
 async def unload(context, extension: str):
@@ -63,7 +63,7 @@ async def unload(context, extension: str):
             "Error Message": error_message
         }))
 
-@client.command()
+@client.command(description = "Reloads a cog.")
 @commands.guild_only()
 async def reload(context, extension: str):
     response = await context.send(embed = create_embed({
@@ -85,7 +85,7 @@ async def reload(context, extension: str):
             "Error Message": error_message
         }))
 
-@client.command()
+@client.command(description = "Reloads all cogs.")
 @commands.guild_only()
 async def update(context):
     response = await context.send(embed = create_embed({
