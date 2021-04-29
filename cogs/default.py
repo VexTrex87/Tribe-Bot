@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-from helper import get_guild_data, save_guild_data, draw_dictionary, get_object, create_embed
+from helper import get_guild_data, save_guild_data, get_object, create_embed
 from cogs.roblox import get_group_name
 
 CLIENT_ID = os.getenv("TB_CLIENT_ID")
