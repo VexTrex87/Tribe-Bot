@@ -5,7 +5,7 @@ import random
 import asyncio
 
 from helper import create_embed, convert_dictionary_to_tree, get_user_data, save_user_data, get_all_guild_data, get_all_user_data
-from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY
+from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL
 
 async def get_group_name(group_id: int):
     url = GROUP_INFO_URL.replace("GROUP_ID", str(group_id))
@@ -70,6 +70,7 @@ class roblox(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.check_groups.start()
+        self.players = {}
 
     def cog_unload(self):
         self.check_groups.cancel()
@@ -133,6 +134,27 @@ class roblox(commands.Cog):
                     await user.send(embed = create_embed({
                         "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
                     }))
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if not message.guild or message.channel.id != REQUESTS_CHANNEL:
+            return
+
+        fields = message.content.split("/")
+        status = fields[0].split("=")[1]
+        player_id = fields[1].split("=")[1]
+        place_id = fields[2].split("=")[1]
+
+        if status == "player_joined":
+            if not self.players.get(place_id):
+                self.players[place_id] = [player_id]
+            else:
+                self.players[place_id].append(player_id)
+        elif status == "player_left":
+            if self.players.get(place_id) and player_id in self.players[place_id]:
+                self.players[place_id].remove(player_id)
+                if len(self.players[place_id]) == 0:
+                    self.players.pop(place_id)
 
     @commands.command()
     @commands.guild_only()
