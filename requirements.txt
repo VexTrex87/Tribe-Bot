@@ -1,0 +1,4 @@
+git+https://github.com/Rapptz/discord.py
+pymongo==3.11.2
+asyncio==3.4.3
+aiohttp==3.7.1
