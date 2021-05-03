@@ -175,3 +175,11 @@ def format_time(timestamp):
 
     timestamp_text = f"{hours}:{minutes}:{seconds}"
     return timestamp_text
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
