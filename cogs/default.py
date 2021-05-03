@@ -642,6 +642,52 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                         await asyncio.sleep(WAIT_DELAY)
                         continue
+                elif name == "roblox_games":
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        await response.edit(embed = create_embed({
+                            "title": f"The roblox game ID {value} must be a number",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    if value in new_guild_data["roblox_games"]:
+                        new_guild_data["roblox_games"].remove(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
+                            guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
+                        else:
+                            guild_data["roblox_games"] = "None"
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed game with id {value} as a roblox game",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        new_guild_data["roblox_games"].append(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
+                            guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
+                        else:
+                            guild_data["roblox_games"] = "None"
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Added game with id {value} as a roblox game",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
