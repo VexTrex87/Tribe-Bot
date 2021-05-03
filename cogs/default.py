@@ -127,6 +127,8 @@ class default(commands.Cog, description = "Default commands and commands for set
                         if point_channel:
                             point_channels.append(point_channel.mention)
                     guild_data["point_channels"] = ", ".join(point_channels)
+                else:
+                    guild_data["point_channels"] = "None"
 
                 qotd_channel_id = guild_data.get("qotd_channel") 
                 if qotd_channel_id:
@@ -296,6 +298,7 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                     new_guild_data = get_guild_data(context.guild.id)
                     new_guild_data["message_cooldown"] = seconds
+                    guild_data["message_cooldown"] = seconds
                     save_guild_data(new_guild_data)
 
                     await response.edit(embed = create_embed({
@@ -328,6 +331,7 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                     new_guild_data = get_guild_data(context.guild.id)
                     new_guild_data["daily_reward"] = value
+                    guild_data["daily_reward"] = value
                     save_guild_data(new_guild_data)
 
                     await response.edit(embed = create_embed({
@@ -352,6 +356,17 @@ class default(commands.Cog, description = "Default commands and commands for set
                     if channel.id in new_guild_data["point_channels"]:
                         new_guild_data["point_channels"].remove(channel.id)
                         save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("point_channels") and len(new_guild_data["point_channels"]) > 0:
+                            point_channels = []
+                            for point_channel_id in new_guild_data["point_channels"]:
+                                point_channel = context.guild.get_channel(point_channel_id)
+                                if point_channel:
+                                    point_channels.append(point_channel.mention)
+                            guild_data["point_channels"] = ", ".join(point_channels)
+                        else:
+                            guild_data["point_channels"] = "None"
+
                         await response.edit(embed = create_embed({
                             "title": f"Removed text channel {channel} from point channels",
                             "color": discord.Color.green(),
@@ -361,7 +376,19 @@ class default(commands.Cog, description = "Default commands and commands for set
                         continue
                     else:
                         new_guild_data["point_channels"].append(channel.id)
+                        guild_data["point_channels"] += f", {channel.mention}"
                         save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("point_channels") and len(new_guild_data["point_channels"]) > 0:
+                            point_channels = []
+                            for point_channel_id in new_guild_data["point_channels"]:
+                                point_channel = context.guild.get_channel(point_channel_id)
+                                if point_channel:
+                                    point_channels.append(point_channel.mention)
+                            guild_data["point_channels"] = ", ".join(point_channels)
+                        else:
+                            guild_data["point_channels"] = "None"
+
                         await response.edit(embed = create_embed({
                             "title": f"Added text channel {channel} to point channels",
                             "color": discord.Color.green(),
@@ -392,6 +419,7 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                     new_guild_data = get_guild_data(context.guild.id)
                     new_guild_data["points_per_message"] = value
+                    guild_data["points_per_message"] = value
                     save_guild_data(new_guild_data)
 
                     await response.edit(embed = create_embed({
@@ -405,6 +433,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     if value.lower() == "none":
                         new_guild_data = get_guild_data(context.guild.id)
                         new_guild_data["qotd_channel"] = None
+                        guild_data["qotd_channel"] = None
                         save_guild_data(new_guild_data)
                         await response.edit(embed = create_embed({
                             "title": f"Removed QOTD channel",
@@ -426,6 +455,7 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                     new_guild_data = get_guild_data(context.guild.id)
                     new_guild_data["qotd_channel"] = channel.id
+                    guild_data["qotd_channel"] = channel.mention
                     save_guild_data(new_guild_data)
                     await response.edit(embed = create_embed({
                         "title": f"Changed QOTD channel to {channel}",
@@ -434,6 +464,48 @@ class default(commands.Cog, description = "Default commands and commands for set
                     }, guild_data))
                     await asyncio.sleep(WAIT_DELAY)
                     continue
+                elif name == "aotd_keywords":
+                    value = value.lower()
+                    new_guild_data = get_guild_data(context.guild.id)
+                    if value in new_guild_data["aotd_keywords"]:
+                        new_guild_data["aotd_keywords"].remove(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("aotd_keywords") and len(new_guild_data["aotd_keywords"]) > 0:
+                            aotd_keywords = []
+                            for keyword in new_guild_data["aotd_keywords"]:
+                                aotd_keywords.append(keyword)
+                            guild_data["aotd_keywords"] = ", ".join(aotd_keywords)
+                        else:
+                            guild_data["aotd_keywords"] = "None"
+
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed {value} as an AOTD keywords",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        new_guild_data["aotd_keywords"].append(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("aotd_keywords") and len(new_guild_data["aotd_keywords"]) > 0:
+                            aotd_keywords = []
+                            for keyword in new_guild_data["aotd_keywords"]:
+                                aotd_keywords.append(keyword)
+                            guild_data["aotd_keywords"] = ", ".join(aotd_keywords)
+                        else:
+                            guild_data["aotd_keywords"] = "None"
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Added {value} as an AOTD keywords",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
