@@ -366,6 +366,39 @@ class default(commands.Cog, description = "Default commands and commands for set
                         }, guild_data))
                         await asyncio.sleep(WAIT_DELAY)
                         continue
+                elif name == "points_per_message":
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        await response.edit(embed = create_embed({
+                            "title": f"The points per message ({value}) must be a number",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    if value < 0:
+                        await response.edit(embed = create_embed({
+                            "title": f"The points per message ({value}) must be greater than or equal to 0",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    new_guild_data["points_per_message"] = value
+                    save_guild_data(new_guild_data)
+
+                    await response.edit(embed = create_embed({
+                        "title": f"Changed points per message to {value}",
+                        "inline": True,
+                        "color": discord.Color.green()
+                    }, guild_data))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
