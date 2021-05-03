@@ -193,6 +193,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                 name = None
                 try:
                     message = await self.client.wait_for("message", check = check_message_response, timeout = 60)
+                    await message.delete()
                     name = message.content
                 except asyncio.TimeoutError:
                     await response.edit(embed = create_embed({
@@ -235,6 +236,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                 value = None
                 try:
                     message = await self.client.wait_for("message", check = check_message_response, timeout = 60)
+                    await message.delete()
                     value = message.content
                 except asyncio.TimeoutError:
                     await response.edit(embed = create_embed({
