@@ -1,59 +1,49 @@
 import discord
 from discord.ext import commands
 import os
+import time
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, list_to_string
+from helper import get_guild_data, save_guild_data, get_object, create_embed, list_to_string, format_time
 from constants import SETTINGS, CLIENT_ID
 from cogs.roblox import get_group_name
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
     def __init__(self, client):
         self.client = client
+        self.uptime = time.time()
  
     @commands.command()
     @commands.guild_only()
-    async def ping(self, context):
+    async def info(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Loading ping...",
+            "title": f"Loading bot Info...",
             "color": discord.Color.gold()
         }))
 
         try:
             ping = round(self.client.latency * 1000)
-            await response.edit(embed = create_embed({
-                "title": f"Your ping is {ping} ms",
-            }))
-        except Exception as error_message:
-            await response.edit(embed = create_embed({
-                "title": f"Could not load ping",
-                "color": discord.Color.red()
-            }, {
-                "Error Message": error_message
-            }))
-            
-    @commands.command()
-    @commands.check_any(commands.has_permissions(create_instant_invite = True))
-    @commands.guild_only()
-    async def invite(self, context):
-        response = await context.send(embed = create_embed({
-            "title": f"Loading bot invite...",
-            "color": discord.Color.gold()
-        }))
-
-        try:
             invite_url = discord.utils.oauth_url(client_id = CLIENT_ID, permissions = discord.Permissions(8))
+            uptime = format_time(round(time.time() - self.uptime))
+            servers = len(await self.client.fetch_guilds(limit = None).flatten())
+            users = len([member for member in self.client.get_all_members()])
+
             await response.edit(embed = create_embed({
-                "title": f"Invite Bot",
-                "url": invite_url
+                "title": f"Bot info",
+                "url": invite_url,
+            }, {
+                "Ping": f"{ping} ms",
+                "Uptime": uptime,
+                "Servers": servers,
+                "Users": users
             }))
         except Exception as error_message:
             await response.edit(embed = create_embed({
-                "title": f"Could not load bot invite",
+                "title": f"Could not load bot info",
                 "color": discord.Color.red()
             }, {
                 "Error Message": error_message
             }))
-            
+ 
     """
 
     @commands.command(aliases = ["set"], description = "Changes guild settings.", brief = "administrator")
@@ -332,9 +322,11 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "Error Message": error_message
             }))
 
+    """
+
     @commands.command()
     @commands.guild_only()
-    async def help(self, context, flag: str = None, value: str = None):
+    async def help(self, context):
         response = await context.send(embed = create_embed({
             "title": "Loading commands...",
             "color": discord.Color.gold()
@@ -454,8 +446,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }, {
                 "Error Message": error_message
             }))     
-
-    """
 
 def setup(client):
     client.add_cog(default(client))
