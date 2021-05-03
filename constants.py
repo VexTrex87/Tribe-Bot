@@ -48,23 +48,6 @@ DEFAULT_GIVEAWAYS_DATA = {
     "member_pool": []
 }
 
-SETTINGS = {
-    "prefix <new_prefix: string>": "Changes the bot's prefix for the guild.",
-    "daily_reward <points: integer>": "Changes the amount of points members get for running the daily command.",
-    "point_channels <channel_name: string / channel_id: integer / channel_mention: mention>": "Adds/removes the channels that members can earn points for chatting.",
-    "points_per_message <points: integer>": "Changes the amount of points members get for sending messages in verified point channels.",
-    "message_cooldown <seconds: integer>": "Changes the cooldown delay for members earnings points from chatting.",
-    "qotd_channel <channel_name: string / channel_id: integer / channel_mention: mention>": "Changes the channel where QOTD messages are sent and detected.",
-    "aotd_keywords <keyword: string>": "Adds/removes the keywords that will be detected to reward members points for answering the QOTD.",
-    "points_per_aotd <points: intenger>": "Changes the amount of points members will get for answering the QOTD.",
-    "giveaway_channel <channel_name: string / channel_id: integer / channel_mention: mention>": "Changes the channel where giveaways will be announced.",
-    "giveaway_entry_cost <points: intenger>": "The amount of points that will be detected from a member for entering a giveaway.",
-    "roblox_groups <group_id: integer>": "Adds/removes the groups members will be rewarded if they join it.",
-    "group_award <points: integer>": "Changes the amount of points members will get for joining a verified roblox group.",
-    "roblox_games <game_id: intenger>": "Adds/removes the games members will e rewarded if they play it every interval set by the guild.",
-    "game_award <points: integer>": "Changes the amount of points members will get for playing a verified roblox game..",
-}
-
 COMMANDS = {
     "Default Commands": {
         "help": "Retrieves bot commands.",
@@ -77,8 +60,8 @@ COMMANDS = {
         "points": "Loads a user's points.",
         "setpoints": "Changes a user's points.",
         "givepoints": "Adds a user's points.",
-        "daily": "Gives the member free points. Can only be used once a day.",
-        "link": "Links a user's Discord account to their Discord account.",
+        "daily": "Gives the member their daily reward of points. Can only be used once a day.",
+        "link": "Links a user's Discord account to their Roblox account.",
     }
 }
 
