@@ -273,6 +273,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         continue
 
                     new_guild_data = get_guild_data(context.guild.id)
+                    guild_data["prefix"] = value
                     new_guild_data["prefix"] = value
                     save_guild_data(new_guild_data)
 
