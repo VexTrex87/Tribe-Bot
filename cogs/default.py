@@ -200,7 +200,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.red()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
 
                 if not name:
@@ -209,7 +209,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.red()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
 
                 name = name.lower()
@@ -221,7 +221,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.red()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
 
                 # get value to change setting to
@@ -242,7 +242,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.red()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
 
                 # changing settings
@@ -256,7 +256,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                             "inline": True,
                             "color": discord.Color.red()
                         }, guild_data))
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(WAIT_DELAY)
                         continue
 
                     if is_number(value):
@@ -265,7 +265,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                             "inline": True,
                             "color": discord.Color.red()
                         }, guild_data))
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(WAIT_DELAY)
                         continue
 
                     new_guild_data = get_guild_data(context.guild.id)
@@ -277,7 +277,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.green()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                 elif name == "message_cooldown":
                     seconds = parse_to_timestamp(value)
                     if not seconds:
@@ -286,7 +286,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                             "inline": True,
                             "color": discord.Color.red(),
                         }, guild_data))
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(WAIT_DELAY)
                         continue
 
                     new_guild_data = get_guild_data(context.guild.id)
@@ -298,14 +298,14 @@ class default(commands.Cog, description = "Default commands and commands for set
                         "inline": True,
                         "color": discord.Color.green()
                     }, guild_data))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
                         "color": discord.Color.red()
                     }))
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(WAIT_DELAY)
                     continue
         except Exception as error_message:
             # traceback.print_exc()
