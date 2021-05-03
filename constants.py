@@ -10,15 +10,18 @@ EXTENSIONS = [
 DEFAULT_GUILD_DATA = {
     "guild_id": None,
     "prefix": "?",
+
     "daily_reward": 10,
     "point_channels": [],
     "points_per_message": 1,
     "message_cooldown": 10,
+
     "qotd_channel": None,
     "aotd_keywords": ["qotd", "aotd"],
     "points_per_aotd": 50,
-    "giveaway_channel": None,
-    "giveaway_entry_cost": 1,
+
+    "giveaway_channel": None
+    ,
     "roblox_groups": [],
     "group_award": 500,
     "roblox_games": [],
@@ -85,6 +88,8 @@ CLIENT_ID = 834455533423427584
 ACCEPT_EMOJI = "✅"
 NEXT_EMOJI = "▶️"
 BACK_EMOJI = "◀️"
+CHANGE_EMOJI = "⚙️"
+WAIT_DELAY = 3
 
 GIVEAWAY_UPDATE_DELAY = 10
 
