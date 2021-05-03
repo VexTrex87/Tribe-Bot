@@ -122,3 +122,23 @@ SETTINGS = {
 }
 
 CLIENT_ID = 834455533423427584
+
+COMMANDS = {
+    "Default Commands": {
+        "help": "Retrieves bot commands.",
+        "info": "Retrieves the bot's ping, invite link, uptime, number of servers, and number of users.",
+        "settings": "Retrieves and changes the guild's settings.",
+        "restart": "Restarts the bot.",
+    },
+    "Fun Commands": {
+        "giveaway": "Creates a giveaway.",
+        "points": "Loads a user's points.",
+        "setpoints": "Changes a user's points.",
+        "givepoints": "Adds a user's points.",
+        "daily": "Gives the member free points. Can only be used once a day.",
+        "link": "Links a user's Discord account to their Discord account.",
+    }
+}
+
+NEXT_EMOJI = "▶️"
+BACK_EMOJI = "◀️"

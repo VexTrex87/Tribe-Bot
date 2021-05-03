@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands
 import os
 import time
+import asyncio
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, list_to_string, format_time
-from constants import SETTINGS, CLIENT_ID
+from constants import SETTINGS, CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI
 from cogs.roblox import get_group_name
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
@@ -16,7 +17,7 @@ class default(commands.Cog, description = "Default commands and commands for set
     @commands.guild_only()
     async def info(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Loading bot Info...",
+            "title": f"Loading bot info...",
             "color": discord.Color.gold()
         }))
 
@@ -28,7 +29,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             users = len([member for member in self.client.get_all_members()])
 
             await response.edit(embed = create_embed({
-                "title": f"Bot info",
+                "title": f"Bot Info",
                 "url": invite_url,
             }, {
                 "Ping": f"{ping} ms",
@@ -44,6 +45,60 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "Error Message": error_message
             }))
  
+    @commands.command()
+    @commands.guild_only()
+    async def help(self, context):
+        response = await context.send(embed = create_embed({
+            "title": f"Loading commands...",
+            "color": discord.Color.gold()
+        }))
+
+        try:
+            pages = []
+            current_page = 0
+            for category, commands in COMMANDS.items():
+                pages.append(create_embed({
+                    "title": category,
+                }, commands))
+
+            await response.edit(embed = pages[current_page])
+
+            while True:
+                def check_response(reaction, user):
+                    return user == context.author and reaction.message == response
+
+                try:
+                    await response.add_reaction(BACK_EMOJI)
+                    await response.add_reaction(NEXT_EMOJI)
+
+                    reaction, user = await self.client.wait_for("reaction_add", check = check_response, timeout = 60)
+
+                    if str(reaction.emoji) == NEXT_EMOJI:
+                        if current_page + 1 >= len(pages):
+                            current_page = len(pages) - 1
+                        else:
+                            current_page += 1
+                    elif str(reaction.emoji) == BACK_EMOJI:
+                        if current_page == 0:
+                            current_page = 0
+                        else:
+                            current_page -= 1
+
+                    await response.edit(embed = pages[current_page])
+                    await response.remove_reaction(reaction.emoji, user)
+                except asyncio.TimeoutError:
+                    await response.edit(embed = create_embed({
+                        "title": f"You did not respond in time",
+                        "color": discord.Color.red()
+                    }))
+        except Exception as error_message:
+            await response.edit(embed = create_embed({
+                "title": f"Could not load commands",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message
+            }))
+
     """
 
     @commands.command(aliases = ["set"], description = "Changes guild settings.", brief = "administrator")
@@ -323,129 +378,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     """
-
-    @commands.command()
-    @commands.guild_only()
-    async def help(self, context):
-        response = await context.send(embed = create_embed({
-            "title": "Loading commands...",
-            "color": discord.Color.gold()
-        }))
-
-        try:
-            if not flag:
-                await response.edit(embed = create_embed({
-                    "title": "Help Command Usage",
-                }, {
-                    "Commands": "help command <command_name>",
-                    "Cogs": "help cog <cog_name>",
-                    "Settings": "help settings",
-                }))
-            elif flag == "command":
-                for command in self.client.commands:
-                    command_name = command.name
-                    if command_name == value:
-                        cog_name = command.cog_name
-                        if not cog_name:
-                            cog_name = "cog"
-
-                        aliases = list_to_string(command.aliases)
-                        if len(aliases) > 0:
-                            aliases = " (" + aliases + ")"
-
-                        description = command.description
-                        if description:
-                            description = description
-                        else:
-                            description = ""
-
-                        parameters = list_to_string(command.clean_params)
-                        if parameters:
-                            parameters = " <" + parameters + ">"
-
-                        brief = command.brief
-                        if brief:
-                            brief = " Requires " + brief + " permissions."
-                        else:
-                            brief = " Requires no permissions."
-
-                        await response.edit(embed = create_embed({
-                            "title": f"{command_name}{aliases}{parameters}",
-                            "description": f"{description}{brief}" or "\u200b"
-                        }))
-                        return
-                await response.edit(embed = create_embed({
-                    "title": f"Could not find command {value}",
-                    "color": discord.Color.red()
-                }))       
-            elif flag == "cog":
-                command_info = {}
-                for command in self.client.commands:
-                    cog_name = command.cog_name
-                    if not cog_name:
-                        cog_name = "cog"
-
-                    command_name = command.name
-
-                    aliases = list_to_string(command.aliases)
-                    if len(aliases) > 0:
-                        aliases = " (" + aliases + ")"
-
-                    description = command.description
-                    if description:
-                        description = description
-                    else:
-                        description = ""
-
-                    parameters = list_to_string(command.clean_params)
-                    if parameters:
-                        parameters = " <" + parameters + ">"
-
-                    brief = command.brief
-                    if brief:
-                        brief = " Requires " + brief + " permissions."
-                    else:
-                        brief = " Requires no permissions."
-
-                    if not command_info.get(cog_name):
-                        command_info[cog_name] = {}
-                    command_info[cog_name][f"{command_name}{aliases}{parameters}"] = f"{description}{brief}" or "\u200b"
-
-                if not value:
-                    cogs = {"cog": "Cog management."}
-                    for cog_name, cog_info in self.client.cogs.items():
-                        cogs[cog_name] = cog_info.description or "\u200b"
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Cogs",
-                    }, cogs))
-                else:
-                    commands = command_info.get(value)
-                    if not commands:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find cog {value}",
-                            "color": discord.Color.red()
-                        }))
-                    else: 
-                        await response.edit(embed = create_embed({
-                            "title": f"{value} Commands",
-                        }, commands))
-            elif flag == "settings":
-                await response.edit(embed = create_embed({
-                    "title": "Settings"
-                }, SETTINGS))
-            else:
-                await response.edit(embed = create_embed({
-                    "title": f"Invalid flag {flag}",
-                    "color": discord.Color.red()
-                }))
-        except Exception as error_message:
-            await response.edit(embed = create_embed({
-                "title": "Could not load commands",
-                "color": discord.Color.red()
-            }, {
-                "Error Message": error_message
-            }))     
 
 def setup(client):
     client.add_cog(default(client))
