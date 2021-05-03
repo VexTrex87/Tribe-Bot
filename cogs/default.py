@@ -539,6 +539,41 @@ class default(commands.Cog, description = "Default commands and commands for set
                     }, guild_data))
                     await asyncio.sleep(WAIT_DELAY)
                     continue
+                elif name == "giveaway_channel":
+                    if value.lower() == "none":
+                        new_guild_data = get_guild_data(context.guild.id)
+                        new_guild_data["giveaway_channel"] = None
+                        guild_data["giveaway_channel"] = None
+                        save_guild_data(new_guild_data)
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed giveaway channel",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    channel = get_object(context.guild.text_channels, value)
+                    if not channel:
+                        await response.edit(embed = create_embed({
+                            "title": f"Could not find text channel {channel or value}",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    new_guild_data["giveaway_channel"] = channel.id
+                    guild_data["giveaway_channel"] = channel.mention
+                    save_guild_data(new_guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Changed giveaway channel to {channel}",
+                        "color": discord.Color.green(),
+                        "inline": True,
+                    }, guild_data))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
