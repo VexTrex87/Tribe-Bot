@@ -147,13 +147,15 @@ class default(commands.Cog, description = "Default commands and commands for set
                     if giveaway_channel:
                         guild_data["giveaway_channel"] = giveaway_channel.mention
 
-                if guild_data.get("roblox_groups"):
+                if guild_data.get("roblox_groups") and len(guild_data["roblox_groups"]) > 0:
                     roblox_groups = []
                     for group_id in guild_data["roblox_groups"]:
                         group_name = await get_group_name(group_id)
                         if group_name:
                             roblox_groups.append(f"{group_name} ({group_id})")
                     guild_data["roblox_groups"] = ", ".join(roblox_groups)
+                else:
+                    guild_data["roblox_groups"] = "None"
 
                 if guild_data.get("roblox_games") and len(guild_data["roblox_games"]) > 0:
                     guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in guild_data["roblox_games"])
@@ -574,6 +576,72 @@ class default(commands.Cog, description = "Default commands and commands for set
                     }, guild_data))
                     await asyncio.sleep(WAIT_DELAY)
                     continue
+                elif name == "roblox_groups":
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        await response.edit(embed = create_embed({
+                            "title": f"The roblox group ID {value} must be a number",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    group_name = await get_group_name(value)
+                    if not group_name:
+                        await response.edit(embed = create_embed({
+                            "title": f"Could not find roblox group with ID {value}",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    if value in new_guild_data["roblox_groups"]:
+                        new_guild_data["roblox_groups"].remove(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
+                            roblox_groups = []
+                            for group_id in new_guild_data["roblox_groups"]:
+                                group_name = await get_group_name(group_id)
+                                if group_name:
+                                    roblox_groups.append(f"{group_name} ({group_id})")
+                            guild_data["roblox_groups"] = ", ".join(roblox_groups)
+                        else:
+                            guild_data["roblox_groups"] = "None"
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed {group_name} ({value}) as a roblox group",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        new_guild_data["roblox_groups"].append(value)
+                        save_guild_data(new_guild_data)
+
+                        if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
+                            roblox_groups = []
+                            for group_id in new_guild_data["roblox_groups"]:
+                                group_name = await get_group_name(group_id)
+                                if group_name:
+                                    roblox_groups.append(f"{group_name} ({group_id})")
+                            guild_data["roblox_groups"] = ", ".join(roblox_groups)
+                        else:
+                            guild_data["roblox_groups"] = "None"
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Added {group_name} ({value}) as a roblox group",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
@@ -582,7 +650,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await asyncio.sleep(WAIT_DELAY)
                     continue
         except Exception as error_message:
-            # traceback.print_exc()
+            traceback.print_exc()
             await response.edit(embed = create_embed({
                 "title": f"Could not load settings",
                 "color": discord.Color.red()
