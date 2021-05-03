@@ -50,25 +50,26 @@ class events(commands.Cog, description = "Default events."):
             save_user_data(user_data)
 
         qotd_channel = message.guild.get_channel(guild_data["qotd_channel"])
-        if message.channel == qotd_channel:
-            for user_data in get_all_user_data():
-                user_data["answered_qotd"] = False
-                save_user_data(user_data)
-
-        for aotd_keyword in guild_data["aotd_keywords"]:
-            if aotd_keyword in message.content.lower() or qotd_channel.mention in message.content.lower():
-                if not user_data["answered_qotd"]:
-                    points_to_give = guild_data["points_per_aotd"]
-
-                    user_data["answered_qotd"] = True
-                    user_data["points"] += points_to_give
+        if qotd_channel:
+            if message.channel == qotd_channel:
+                for user_data in get_all_user_data():
+                    user_data["answered_qotd"] = False
                     save_user_data(user_data)
 
-                    await message.author.send(embed = create_embed({
-                        "title": f"You earned {points_to_give} points for answering the QOTD",
-                    }))
-                    
-                    break
+            for aotd_keyword in guild_data["aotd_keywords"]:
+                if aotd_keyword in message.content.lower() or qotd_channel.mention in message.content.lower():
+                    if not user_data["answered_qotd"]:
+                        points_to_give = guild_data["points_per_aotd"]
+
+                        user_data["answered_qotd"] = True
+                        user_data["points"] += points_to_give
+                        save_user_data(user_data)
+
+                        await message.author.send(embed = create_embed({
+                            "title": f"You earned {points_to_give} points for answering the QOTD",
+                        }))
+                        
+                        break
 
 def setup(client):
     client.add_cog(events(client))
