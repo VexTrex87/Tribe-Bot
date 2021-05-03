@@ -119,29 +119,31 @@ class default(commands.Cog, description = "Default commands and commands for set
                     guild_data.pop("_id")
                 if guild_data.get("guild_id"):
                     guild_data.pop("guild_id")
-
-                if guild_data.get("point_channels"):
+   
+                if guild_data.get("point_channels") and len(guild_data["point_channels"]) > 0:
                     point_channels = []
-                    for channel_id in guild_data["point_channels"]:
-                        channel = context.guild.get_channel(channel_id)
-                        if channel:
-                            point_channels.append(channel.mention)
+                    for point_channel_id in guild_data["point_channels"]:
+                        point_channel = context.guild.get_channel(point_channel_id)
+                        if point_channel:
+                            point_channels.append(point_channel.mention)
                     guild_data["point_channels"] = ", ".join(point_channels)
 
-                if guild_data.get("qotd_channel"):
-                    channel = context.guild.get_channel(channel_id)
-                    if channel:
-                        guild_data["qotd_channel"] = channel.mention
+                qotd_channel_id = guild_data.get("qotd_channel") 
+                if qotd_channel_id:
+                    qotd_channel = context.guild.get_channel(qotd_channel_id)
+                    if qotd_channel:
+                        guild_data["qotd_channel"] = qotd_channel.mention
 
                 if guild_data.get("aotd_keywords") and len(guild_data["aotd_keywords"]) > 0:
                     guild_data["aotd_keywords"] = ", ".join(guild_data["aotd_keywords"])
                 else:
                     guild_data["aotd_keywords"] = "None"
 
-                if guild_data.get("giveaway_channel"):
-                    channel = context.guild.get_channel(channel_id)
-                    if channel:
-                        guild_data["giveaway_channel"] = channel.mention
+                giveaway_channel_id = guild_data.get("giveaway_channel") 
+                if giveaway_channel_id:
+                    giveaway_channel = context.guild.get_channel(giveaway_channel_id)
+                    if giveaway_channel:
+                        guild_data["giveaway_channel"] = giveaway_channel.mention
 
                 if guild_data.get("roblox_groups"):
                     roblox_groups = []
@@ -398,7 +400,39 @@ class default(commands.Cog, description = "Default commands and commands for set
                     }, guild_data))
                     await asyncio.sleep(WAIT_DELAY)
                     continue
+                elif name == "qotd_channel":
+                    if value.lower() == "none":
+                        new_guild_data = get_guild_data(context.guild.id)
+                        new_guild_data["qotd_channel"] = None
+                        save_guild_data(new_guild_data)
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed QOTD channel",
+                            "color": discord.Color.green(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
 
+                    channel = get_object(context.guild.text_channels, value)
+                    if not channel:
+                        await response.edit(embed = create_embed({
+                            "title": f"Could not find text channel {channel or value}",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    new_guild_data["qotd_channel"] = channel.id
+                    save_guild_data(new_guild_data)
+                    await response.edit(embed = create_embed({
+                        "title": f"Changed QOTD channel to {channel}",
+                        "color": discord.Color.green(),
+                        "inline": True,
+                    }, guild_data))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
