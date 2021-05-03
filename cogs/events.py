@@ -13,7 +13,7 @@ class events(commands.Cog, description = "Default events."):
     async def on_command_error(self, context, error):
         if isinstance(error, commands.CheckFailure):
             await context.send(embed = create_embed({
-                "title": f"Commands must be used in guilds",
+                "title": f"Commands must be used in servers",
                 "color": discord.Color.red()
             }))
             
