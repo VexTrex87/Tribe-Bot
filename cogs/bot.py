@@ -4,6 +4,7 @@ import os
 import sys
 
 from helper import create_embed
+from constants import ACCEPT_EMOJI
 
 class bot(commands.Cog, description = "Commands for managing the bot."):
     def __init__(self, client):
@@ -65,11 +66,29 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
     @commands.guild_only()
     async def restart(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Restarting...",
+            "title": f"Are you sure you want to restart the bot?",
             "color": discord.Color.gold()
         }))
         
-        sys.exit()
+        def check_response(reaction, user):
+            return not user.bot and user == context.author and str(reaction.emoji) == ACCEPT_EMOJI and reaction.message == response
+
+        try:
+            await response.add_reaction(ACCEPT_EMOJI)
+            await self.client.wait_for("reaction_add", check = check_response, timeout = 30)
+        except asyncio.TimeoutError:
+            await response.edit(embed = create_embed({
+                "title": f"You did not respond in time",
+                "color": discord.Color.red()
+            }))
+            return
+        else:
+            await response.edit(embed = create_embed({
+                "title": "Restarting bot...",
+                "color": discord.Color.green()
+            }))
+
+            sys.exit()
 
 def setup(client):
     client.add_cog(bot(client))
