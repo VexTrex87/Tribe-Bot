@@ -18,7 +18,6 @@ DEFAULT_GUILD_DATA = {
     "aotd_keywords": ["qotd", "aotd"],
     "points_per_aotd": 50,
     "giveaway_channel": None,
-    "giveaway_entry_cost": 1,
     "roblox_groups": [],
     "group_award": 500,
     "roblox_games": [],
