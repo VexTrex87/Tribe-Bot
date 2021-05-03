@@ -3,16 +3,14 @@ from discord.ext import commands
 import os
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, list_to_string
-from constants import SETTINGS
+from constants import SETTINGS, CLIENT_ID
 from cogs.roblox import get_group_name
-
-CLIENT_ID = os.getenv("TB_CLIENT_ID")
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
     def __init__(self, client):
         self.client = client
  
-    @commands.command(description = "Retrieves the bot's connection to Discord.")
+    @commands.command()
     @commands.guild_only()
     async def ping(self, context):
         response = await context.send(embed = create_embed({
@@ -33,29 +31,31 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "Error Message": error_message
             }))
             
-    @commands.command(description = "Retrieves an invite link for the bot.", brief = "create instant invite")
+    @commands.command()
     @commands.check_any(commands.has_permissions(create_instant_invite = True))
     @commands.guild_only()
     async def invite(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Loading bot invite link...",
+            "title": f"Loading bot invite...",
             "color": discord.Color.gold()
         }))
 
         try:
             invite_url = discord.utils.oauth_url(client_id = CLIENT_ID, permissions = discord.Permissions(8))
             await response.edit(embed = create_embed({
-                "title": f"Bot invite link",
+                "title": f"Invite Bot",
                 "url": invite_url
             }))
         except Exception as error_message:
             await response.edit(embed = create_embed({
-                "title": f"Could not load bot invite link",
+                "title": f"Could not load bot invite",
                 "color": discord.Color.red()
             }, {
                 "Error Message": error_message
             }))
             
+    """
+
     @commands.command(aliases = ["set"], description = "Changes guild settings.", brief = "administrator")
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
@@ -332,7 +332,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "Error Message": error_message
             }))
 
-    @commands.command(aliases = ["cmds"], description = "Retrieves a list of all the bot commands.")
+    @commands.command()
     @commands.guild_only()
     async def help(self, context, flag: str = None, value: str = None):
         response = await context.send(embed = create_embed({
@@ -454,6 +454,8 @@ class default(commands.Cog, description = "Default commands and commands for set
             }, {
                 "Error Message": error_message
             }))     
+
+    """
 
 def setup(client):
     client.add_cog(default(client))

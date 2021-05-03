@@ -120,3 +120,5 @@ SETTINGS = {
     "roblox_games <game_id: intenger>": "Adds/removes the games members will e rewarded if they play it every interval set by the guild.",
     "game_award <points: integer>": "Changes the amount of points members will get for playing a verified roblox game..",
 }
+
+CLIENT_ID = 834455533423427584
