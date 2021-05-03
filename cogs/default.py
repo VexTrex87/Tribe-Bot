@@ -1,11 +1,10 @@
 import discord
 from discord.ext import commands
-import os
 import time
 import asyncio
 import traceback
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, list_to_string, format_time, is_number, parse_to_timestamp
+from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp
 from constants import SETTINGS, CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY
 from cogs.roblox import get_group_name
 
