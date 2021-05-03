@@ -87,10 +87,9 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await response.edit(embed = pages[current_page])
                     await response.remove_reaction(reaction.emoji, user)
                 except asyncio.TimeoutError:
-                    await response.edit(embed = create_embed({
-                        "title": f"You did not respond in time",
-                        "color": discord.Color.red()
-                    }))
+                    await response.edit(embed = pages[current_page])
+                    await response.clear_reactions()
+                    return
         except Exception as error_message:
             await response.edit(embed = create_embed({
                 "title": f"Could not load commands",
