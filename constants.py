@@ -60,8 +60,9 @@ COMMANDS = {
         "giveaway": "Creates a giveaway.",
         "points": "Loads a user's points.",
         "setpoints": "Changes a user's points.",
-        "givepoints": "Adds a user's points.",
+        "addpoints": "Adds a user's points.",
         "daily": "Gives the member their daily reward of points. Can only be used once a day.",
+        "leaderboard": "Retrieves the users with the most points in the server.",
         "link": "Links a user's Discord account to their Roblox account.",
     }
 }

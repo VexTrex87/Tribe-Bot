@@ -9,7 +9,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
     def __init__(self, client):
         self.client = client
 
-    @commands.command(description = "Retrieves the member's points.")
+    @commands.command()
     @commands.guild_only()
     async def points(self, context, member: discord.Member = None):
         if not member:
@@ -34,7 +34,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command(description = "Changes a member's points.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def setpoints(self, context, member: discord.Member, amount: int):
@@ -44,6 +44,15 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         }))
         
         try:
+            if amount < 0:
+                await response.edit(embed = create_embed({
+                    "title": f"The amount of points ({amount}) cannot be less than 0",
+                    "color": discord.Color.red()
+                }, {
+                    "Error Message": error_message
+                }))
+                return
+
             user_data = get_user_data(member.id) 
             user_data["points"] = amount
             save_user_data(user_data)
@@ -64,7 +73,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command(description = "Adds a member's points.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def addpoints(self, context, member: discord.Member, amount: int):
@@ -74,10 +83,12 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         }))
         
         try:
-            if amount <= 0:
+            if amount < 0:
                 await response.edit(embed = create_embed({
-                    "title": f"{amount} is not greater than 0",
+                    "title": f"The amount of points ({amount}) cannot be less than 0",
                     "color": discord.Color.red()
+                }, {
+                    "Error Message": error_message
                 }))
                 return
 
@@ -101,11 +112,11 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
             
-    @commands.command(description = "Gives the members points. Can only be used after an interval set by the guild.")
+    @commands.command()
     @commands.guild_only()
     async def daily(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Giving daily points...",
+            "title": f"Giving daily trestf...",
             "color": discord.Color.gold()
         }))
         
@@ -133,13 +144,13 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
             }))
         except Exception as error_message:
             await response.edit(embed = create_embed({
-                "title": f"Could not claim daily points",
+                "title": f"Could not claim daily reward",
                 "color": discord.Color.red()
             }, {
                 "Error Message": error_message
             }))
             
-    @commands.command(description = "Retrieves the members with the most points in the guild.")
+    @commands.command()
     @commands.guild_only()
     async def leaderboard(self, context):
         response = await context.send(embed = create_embed({
@@ -158,6 +169,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
 
             fields = {}
             for rank, user_data in enumerate(guild_user_data):
+                member = await context.guild.fetch_member(user_data["user_id"])
                 points = user_data["points"]
                 fields[f"{rank + 1}. {member.name}"] = f"{points} points"
                 
