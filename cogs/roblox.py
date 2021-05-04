@@ -5,7 +5,7 @@ import random
 import asyncio
 
 from helper import create_embed, get_user_data, save_user_data, get_all_guild_data, get_all_user_data
-from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY
+from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY, CHANGE_EMOJI
 
 async def get_group_name(group_id: int):
     url = GROUP_INFO_URL.replace("GROUP_ID", str(group_id))
@@ -66,7 +66,7 @@ def generate_random_keywords():
     random_keywords = random.sample(ROBLOX_KEYWORDS, ROBLOX_KEYWORD_COUNT)
     return " ".join(random_keywords)
 
-class roblox(commands.Cog, description = "Commands for viewing and linking roblox accounts."):
+class roblox(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.players = {}
@@ -174,7 +174,7 @@ class roblox(commands.Cog, description = "Commands for viewing and linking roblo
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if not message.guild or message.channel.id != REQUESTS_CHANNEL:
+        if not message.guild or message.channel.id != REQUESTS_CHANNEL or not message.author.bot:
             return
 
         fields = message.content.split("/")
@@ -193,15 +193,64 @@ class roblox(commands.Cog, description = "Commands for viewing and linking roblo
                 if len(self.players[place_id]) == 0:
                     self.players.pop(place_id)
 
-    @commands.command(description = "Links a roblox account to a discord account.")
+    @commands.command()
     @commands.guild_only()
-    async def linkroblox(self, context, *, username: str):
+    async def link(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Linking roblox account {username}...",
+            "title": f"Retrieving your roblox account...",
             "color": discord.Color.gold()
         }))
 
         try:
+            user_data = get_user_data(context.author.id)
+            
+            # get roblox account
+
+            roblox_account_id = user_data["roblox_account_id"]
+            roblox_account_username = roblox_account_id and await get_username(roblox_account_id)
+            
+            await response.edit(embed = create_embed({
+                "title": roblox_account_username and f"Your your roblox account is {roblox_account_username}" or "You do not have a linked roblox account",
+                "description": f"React with {CHANGE_EMOJI} to link a new roblox account"
+            }))
+
+            # change roblox account
+
+            def check_response_change(reaction, user):
+                return user == context.author and str(reaction.emoji) == CHANGE_EMOJI and reaction.message.channel == context.channel
+
+            try:
+                await response.add_reaction(CHANGE_EMOJI)
+                reaction, user = await self.client.wait_for("reaction_add", check = check_response_change, timeout = 30)
+            except asyncio.TimeoutError:
+                await response.edit(embed = create_embed({
+                    "title": "No response sent",
+                    "color": discord.Color.red()
+                }))
+                return
+
+            # get user id
+
+            def check_response_username(message):
+                return message.author == context.author
+
+            await response.edit(embed = create_embed({
+                "title": "Enter your roblox username",
+                "color": discord.Color.gold()
+            }))
+
+            username = None
+            try:
+                await response.clear_reactions()
+                message = await self.client.wait_for("message", check = check_response_username, timeout = 30)
+                username = message.content
+            except asyncio.TimeoutError:
+                await response.edit(embed = create_embed({
+                    "title": "No response sent",
+                    "color": discord.Color.red()
+                }))
+                return
+
             user_id = await get_user_id(username)
             if not user_id:
                 await response.edit(embed = create_embed({
@@ -210,87 +259,48 @@ class roblox(commands.Cog, description = "Commands for viewing and linking roblo
                 }))
                 return
 
+            # wait for verification text
+
             verification_message = generate_random_keywords()
             await response.edit(embed = create_embed({
-                "title": "Change your user description or status to the following text. Say \"done\" when finished. Timeout in 30 seconds.",
+                "title": f"Change your user description or status to the following text. React with {ACCEPT_EMOJI} when done",
                 "color": discord.Color.gold()
             }, {
                 "Text": verification_message
             }))
 
-            def check_response(reaction, user):
-                return not user.bot and user == context.author and str(reaction.emoji) == ACCEPT_EMOJI and reaction.message.channel == context.channel
+            def check_response_verification(reaction, user):
+                return user == context.author and str(reaction.emoji) == ACCEPT_EMOJI and reaction.message.channel == context.channel
 
             try:
                 await response.add_reaction(ACCEPT_EMOJI)
-                reaction, user = await self.client.wait_for("reaction_add", check = check_response, timeout = 30)
+                reaction, user = await self.client.wait_for("reaction_add", check = check_response_verification, timeout = 300)
             except asyncio.TimeoutError:
                 await response.edit(embed = create_embed({
-                    "title": f"No response sent in time to verify roblox account {username}",
+                    "title": f"No response sent",
                     "color": discord.Color.red()
                 }))
                 return
+
+            await response.clear_reactions()
+            is_verified = verification_message in await get_user_description(user_id) or verification_message in await get_user_status(user_id)
+            if is_verified:
+                user_data["roblox_account_id"] = user_id
+                save_user_data(user_data)
+
+                await response.edit(embed = create_embed({
+                    "title": f"Linked discord account {context.author} to roblox account {username}",
+                    "color": discord.Color.green()
+                }))
             else:
-                is_verified = verification_message in await get_user_description(user_id) or verification_message in await get_user_status(user_id)
-                if is_verified:
-                    user_data = get_user_data(context.author.id)
-                    user_data["roblox_account_id"] = user_id
-                    save_user_data(user_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Linked discord account {context.author} to roblox account {username}",
-                        "color": discord.Color.green()
-                    }))
-                else:
-                    await response.edit(embed = create_embed({
-                        "title": f"Could not find verification message in {username}'s status or description",
-                        "color": discord.Color.red()
-                    }))
-
-        except Exception as error_message:
-            create_embed({
-                "title": f"Could not link roblox account {username}",
-                "color": discord.Color.red()
-            }, {
-                "Error Message": error_message
-            })
-
-    @commands.command(description = "Views the linked roblox account for the discord account.")
-    @commands.guild_only()
-    async def robloxaccount(self, context, member: discord.Member = None):
-        if not member:
-            member = context.author
-
-        response = await context.send(embed = create_embed({
-            "title": f"Loading {member}'s roblox account'...",
-            "color": discord.Color.gold()
-        }))
-
-        try:
-            user_data = get_user_data(member.id)
-            user_id = user_data.get("roblox_account_id")
-            if not user_id:
                 await response.edit(embed = create_embed({
-                    "title": f"{member} has no linked roblox account",
+                    "title": f"Could not find verification message in {username}'s status or description",
                     "color": discord.Color.red()
                 }))
-                return
-
-            username = await get_username(user_id)
-            if not username:
-                await response.edit(embed = create_embed({
-                    "title": f"Could not get the username of roblox account {user_id}",
-                    "color": discord.Color.red()
-                }))
-                return
-
-            await response.edit(embed = create_embed({
-                "title": f"{member}'s roblox account is {username}",
-                "color": discord.Color.green()
-            }))
         except Exception as error_message:
+            traceback.print_exc()
             await response.edit(embed = create_embed({
-                "title": f"Could not load {member}'s roblox account",
+                "title": f"Could not retrieve your roblox account",
                 "color": discord.Color.red()
             }, {
                 "Error Message": error_message
