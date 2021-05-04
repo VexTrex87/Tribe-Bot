@@ -5,7 +5,7 @@ import random
 import asyncio
 
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
-from constants import GIVEAWAY_UPDATE_DELAY, DEFAULT_GIVEAWAYS_DATA, WAIT_DELAY
+from constants import GIVEAWAY_UPDATE_DELAY, DEFAULT_GIVEAWAYS_DATA, WAIT_DELAY, DECLINE_EMOJI
 
 class giveaway(commands.Cog, description = "Commands for managing and entering giveaways."):
     def __init__(self, client):
@@ -121,34 +121,53 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
         # check if user reacted to a giveaway
         giveaway_info = get_giveaway(message.id)
-        if giveaway_info:
-            # check giveaway entry
-            if user.id in giveaway_info["member_pool"]:
+        if giveaway_info and giveaway_info["endsin"] > time():
+            if str(reaction.emoji) == giveaway_info["join_emoji"]:
+                # check giveaway entry
+                if user.id in giveaway_info["member_pool"]:
+                    await user.send(embed = create_embed({
+                        "title": f"You already entered giveaway {message.id}",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                user_data = get_user_data(user.id)
+                if user_data["points"] < giveaway_info["price"]:
+                    await user.send(embed = create_embed({
+                        "title": f"You do not have enough points to join giveaway {message.id}",
+                        "color": discord.Color.red()
+                    }))
+                    return
+
+                # process giveaway entry
+                user_data["points"] -= giveaway_info["price"]
+                save_user_data(user_data)
+
+                giveaway_info["member_pool"].append(user.id)
+                save_giveaway(giveaway_info)
+
                 await user.send(embed = create_embed({
-                    "title": f"You already entered giveaway {message.id}",
-                    "color": discord.Color.red()
+                    "title": f"You joined giveaway {message.id}",
+                    "color": discord.Color.green()
                 }))
-                return
+            elif str(reaction.emoji) == DECLINE_EMOJI:
+                if user.id == giveaway_info["creator"]:
+                    delete_giveaway(message.id)
 
-            user_data = get_user_data(user.id)
-            if user_data["points"] < giveaway_info["price"]:
-                await user.send(embed = create_embed({
-                    "title": f"You do not have enough points to join giveaway {message.id}",
-                    "color": discord.Color.red()
-                }))
-                return
+                    await message.edit(embed = create_embed({
+                        "title": "CANCELED: {}".format(giveaway_info["title"]),
+                        "color": discord.Color.red(),
+                    }, {
+                        "Price": "{} points".format(giveaway_info["price"]),
+                        "Reward": "{} points".format(giveaway_info["reward"]),
+                        "Ends On": ctime(giveaway_info["endsin"]),
+                        "Creator": user.mention
+                    }))
 
-            # process giveaway entry
-            user_data["points"] -= giveaway_info["price"]
-            save_user_data(user_data)
-
-            giveaway_info["member_pool"].append(user.id)
-            save_giveaway(giveaway_info)
-
-            await user.send(embed = create_embed({
-                "title": f"You joined giveaway {message.id}",
-                "color": discord.Color.green()
-            }))
+                    await user.send(embed = create_embed({
+                        "title": f"Deleted giveaway {message.id}",
+                        "color": discord.Color.green()
+                    }))
 
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
@@ -295,8 +314,6 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
             }))
 
-            await asyncio.sleep(2)
-
             guild_data = get_guild_data(context.guild.id)
 
             giveaway_channel_id = guild_data.get("giveaway_channel")
@@ -342,7 +359,6 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 "Ends In": endsin_time_text,
                 "Join Emoji": giveaway["join_emoji"],
                 "Creator": context.author.mention,
-
             }))
         except asyncio.TimeoutError:
             await response.edit(embed = create_embed({
