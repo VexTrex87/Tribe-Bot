@@ -39,10 +39,11 @@ DEFAULT_USER_DATA = {
 
 DEFAULT_GIVEAWAYS_DATA = {
     "title": "",
-    "prize": 0,
-    "creator": None,
+    "price": 0,
+    "reward": 0,
     "endsin": None,
     "join_emoji": None,
+    "creator": None,
     "guild_id": None,
     "message_id": None,
     "member_pool": []

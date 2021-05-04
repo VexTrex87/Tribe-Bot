@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands, tasks
 from time import time, ctime
 import random
+import asyncio
 
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
-from constants import GIVEAWAY_UPDATE_DELAY
+from constants import GIVEAWAY_UPDATE_DELAY, DEFAULT_GIVEAWAYS_DATA, WAIT_DELAY
 
 class giveaway(commands.Cog, description = "Commands for managing and entering giveaways."):
     def __init__(self, client):
@@ -39,7 +40,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 # end giveaway
                 message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
                 title = giveaway_info["title"]
-                prize = giveaway_info["prize"]
+                prize = giveaway_info["reward"]
                 endsin_time_text = ctime(giveaway_info["endsin"])
 
                 creator = await guild.fetch_member(giveaway_info["creator"])
@@ -67,7 +68,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
                     # reward winner
                     winner_user_data = get_user_data(winner_id)
-                    winner_user_data["points"] += giveaway_info["prize"]
+                    winner_user_data["points"] += giveaway_info["reward"]
                     save_user_data(winner_user_data)
                     
                     await message.edit(embed = create_embed({
@@ -82,7 +83,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
                     await winner.send(embed = create_embed({
                         "title": "You won {} points from giveaway {}".format(
-                            giveaway_info["prize"],
+                            giveaway_info["reward"],
                             giveaway_info["message_id"]
                         ),
                     }))
@@ -130,7 +131,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 return
 
             user_data = get_user_data(user.id)
-            if user_data["points"] < guild_data["giveaway_entry_cost"]:
+            if user_data["points"] < giveaway_info["price"]:
                 await user.send(embed = create_embed({
                     "title": f"You do not have enough points to join giveaway {message.id}",
                     "color": discord.Color.red()
@@ -138,7 +139,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 return
 
             # process giveaway entry
-            user_data["points"] -= guild_data["giveaway_entry_cost"]
+            user_data["points"] -= giveaway_info["price"]
             save_user_data(user_data)
 
             giveaway_info["member_pool"].append(user.id)
@@ -149,21 +150,153 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 "color": discord.Color.green()
             }))
 
-    @commands.command(description = "Creates a giveaway.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
-    async def creategiveaway(self, context, endsin, prize: int, join_emoji, *, title: str):
+    async def giveaway(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Creating giveaway...",
+            "title": "Please enter the title of the giveaway",
             "color": discord.Color.gold()
-        }, {
-            "Title": title,
-            "Ends in": endsin,
-            "Prize": f"{prize} points",
-            "Join Emoji": join_emoji,
         }))
-        
+
         try:
+            giveaway = DEFAULT_GIVEAWAYS_DATA.copy()
+            def check_message_response(message):
+                return message.author == context.author and message.channel == response.channel
+
+            # title
+            message = await self.client.wait_for("message", check = check_message_response, timeout = 60)
+            await message.delete()
+            giveaway["title"] = message.content
+
+            # price 
+            while True:
+                await response.edit(embed = create_embed({
+                    "title": "Please enter the price requirement to join the giveaway",
+                    "color": discord.Color.gold()
+                }))
+
+                message = await self.client.wait_for("message", check = check_message_response, timeout = 30)
+                price = message.content
+
+                try:
+                    price = int(price)
+                except ValueError:
+                    await response.edit(embed = create_embed({
+                        "title": f"The price ({price}) must be a number",
+                        "color": discord.Color.red()
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+        
+                if price < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"The price ({price}) must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
+                giveaway["price"] = price
+                await message.delete()
+                break
+
+            # reward 
+            while True:
+                await response.edit(embed = create_embed({
+                    "title": "Please enter the reward of the giveaway",
+                    "color": discord.Color.gold()
+                }))
+
+                message = await self.client.wait_for("message", check = check_message_response, timeout = 30)
+                reward = message.content
+
+                try:
+                    reward = int(reward)
+                except ValueError:
+                    await response.edit(embed = create_embed({
+                        "title": f"The reward ({reward}) must be a number",
+                        "color": discord.Color.red()
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+        
+                if reward < 0:
+                    await response.edit(embed = create_embed({
+                        "title": f"The reward ({reward}) must be greater than or equal to 0",
+                        "color": discord.Color.red()
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
+                giveaway["reward"] = reward
+                await message.delete()
+                break
+
+            # ends in 
+            while True:
+                await response.edit(embed = create_embed({
+                    "title": "Please enter the duration of the giveaway",
+                    "description": "Example: 86400, 86400s, 1440m, 24h, 1d",
+                    "color": discord.Color.gold()
+                }))
+
+                message = await self.client.wait_for("message", check = check_message_response, timeout = 30)
+                duration = message.content
+
+                try:
+                    parsed_timestamp = parse_to_timestamp(duration)
+                    endsin_timestamp = round(time() + parsed_timestamp)
+                    endsin_time_text = ctime(endsin_timestamp)
+                except ValueError:
+                    await response.edit(embed = create_embed({
+                        "title": f"Could not parse duration {duration} to a real duration",
+                        "color": discord.Color.red()
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
+                giveaway["endsin"] = endsin_timestamp
+                await message.delete()
+                break
+
+            # join emoji
+            while True:
+                await response.edit(embed = create_embed({
+                    "title": "Please react with the emoji users will react with to join the giveaway",
+                    "color": discord.Color.gold()
+                }))
+
+                def check_reaction_response(reaction, user):
+                    return user == context.author and reaction.message == response
+
+                reaction, user = await self.client.wait_for("reaction_add", check = check_reaction_response, timeout = 30)
+                join_emoji = reaction.emoji
+                giveaway["join_emoji"] = str(join_emoji)
+                await response.clear_reactions()
+                break
+              
+            # other info
+            giveaway["creator"] = context.author.id
+            giveaway["guild_id"] = context.guild.id
+
+            # create giveaway announcement
+
+            await response.edit(embed = create_embed({
+                "title": "Announcing giveaway...",
+                "color": discord.Color.gold()
+            }, {
+                "Title": giveaway["title"],
+                "Price": giveaway["price"],
+                "Reward": giveaway["reward"],
+                "Ends In": endsin_time_text,
+                "Join Emoji": giveaway["join_emoji"],
+                "Creator": context.author.mention,
+
+            }))
+
+            await asyncio.sleep(2)
+
             guild_data = get_guild_data(context.guild.id)
 
             giveaway_channel_id = guild_data.get("giveaway_channel")
@@ -171,11 +304,6 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 await response.edit(embed = create_embed({
                     "title": f"No giveaway channel set",
                     "color": discord.Color.red()
-                }, {
-                    "Title": title,
-                    "Ends in": endsin,
-                    "Prize": f"{prize} points",
-                    "Join Emoji": join_emoji,
                 }))
                 return
 
@@ -184,118 +312,51 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 await response.edit(embed = create_embed({
                     "title": f"No giveaway channel set",
                     "color": discord.Color.red()
-                }, {
-                    "Title": title,
-                    "Ends in": endsin,
-                    "Prize": f"{prize} points",
-                    "Join Emoji": join_emoji,
                 }))
                 return
 
-            endsin = parse_to_timestamp(endsin)
-            endsin_timestamp = round(time() + endsin)
-            endsin_time_text = ctime(endsin_timestamp)
-
-            message = await giveaway_channel.send(embed = create_embed({
-                "title": title,
-                "color": discord.Color.gold()
+            embed = create_embed({
+                "title": giveaway["title"],
+                "color": discord.Color.gold(),
             }, {
-                "Prize": f"{prize} points",
-                "Creator": context.author.mention,
-                "Ends In": endsin_time_text
-            }))
-            await message.add_reaction(join_emoji)
-
-            create_giveaway({
-                "title": title,
-                "prize": prize,
-                "creator": context.author.id,
-                "endsin": endsin_timestamp,
-                "join_emoji": join_emoji,
-                "message_id": message.id,
-                "guild_id": context.guild.id,
-                "member_pool": []
+                "Price": "{} points".format(giveaway["price"]),
+                "Reward": "{} points".format(giveaway["reward"]),
+                "Ends On": ctime(giveaway["endsin"]),
+                "Creator": context.author.mention
             })
+            giveaway_message = await giveaway_channel.send(embed = embed)
+
+            await giveaway_message.add_reaction(join_emoji)
+
+            # other info & save
+            giveaway["message_id"] = giveaway_message.id
+            create_giveaway(giveaway)
 
             await response.edit(embed = create_embed({
-                "title": f"Created giveaway in {giveaway_channel}",
+                "title": "Created giveaway",
                 "color": discord.Color.green()
             }, {
-                "Title": title,
-                "Ends in": endsin,
-                "Prize": f"{prize} points",
-                "Join Emoji": join_emoji,
+                "Title": giveaway["title"],
+                "Price": giveaway["price"],
+                "Reward": giveaway["reward"],
+                "Ends In": endsin_time_text,
+                "Join Emoji": giveaway["join_emoji"],
+                "Creator": context.author.mention,
+
+            }))
+        except asyncio.TimeoutError:
+            await response.edit(embed = create_embed({
+                "title": f"No response entered",
+                "color": discord.Color.red()
             }))
         except Exception as error_message:
+            traceback.print_exc()
             await response.edit(embed = create_embed({
-                "title": f"Could not create giveaway",
+                "title": "Could not create giveaway",
                 "color": discord.Color.red()
             }, {
-                "Error Message": error_message,
-                "Title": title,
-                "Ends in": endsin,
-                "Prize": f"{prize} points",
-                "Join Emoji": join_emoji,
-            }))
-            
-    @commands.command(description = "Lists the current guild's giveaways.")
-    @commands.guild_only()
-    async def giveaways(self, context):
-        response = await context.send(embed = create_embed({
-            "title": f"Loading giveaways...",
-            "color": discord.Color.gold()
-        }))
-        
-        try:
-            fields = {}
-            for giveaway_info in get_all_giveaways():
-                creator = await context.guild.fetch_member(giveaway_info["creator"])
-                title = giveaway_info["title"]
-                prize = giveaway_info["prize"]
-                endsin = ctime(giveaway_info["endsin"])
-                message_id = giveaway_info["message_id"]
-
-                member_pool_count = 0
-                for member_id in giveaway_info["member_pool"]:
-                    member = await context.guild.fetch_member(member_id)
-                    if member:
-                        member_pool_count += 1
-
-                fields[title] = f"Prize: {prize} points | Creator: {creator} | Ends In: {endsin} | Message ID: {message_id} | Member Pool: {member_pool_count} member(s)"
-
-            await response.edit(embed = create_embed({
-                "title": f"Giveaways",
-            }, fields))
-        except Exception as error_message:
-            await response.edit(embed = create_embed({
-                "title": f"Could not load giveaways",
-                "color": discord.Color.red()
-            }, {
-                "Error Message": error_message,
+                "Error Message": error_message
             }))
 
-    @commands.command(description = "Deletes a giveaway.", brief = "administrator")
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
-    @commands.guild_only()
-    async def deletegiveaway(self, context, message_id: int):
-        response = await context.send(embed = create_embed({
-            "title": f"Deleting giveaway {message_id}...",
-            "color": discord.Color.gold()
-        }))
-        
-        try:
-            delete_giveaway(message_id)
-            await response.edit(embed = create_embed({
-                "title": f"Deleted giveaway {message_id}",
-                "color": discord.Color.green()
-            }))
-        except Exception as error_message:
-            await response.edit(embed = create_embed({
-                "title": f"Could not delete giveaway {message_id}",
-                "color": discord.Color.red()
-            }, {
-                "Error Message": error_message,
-            }))
-            
 def setup(client):
     client.add_cog(giveaway(client))
