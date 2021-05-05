@@ -183,3 +183,23 @@ def is_number(s):
     except ValueError:
         return False
 
+def check_if_bot_manager(context):
+    if context.author == context.guild.owner:
+        return True
+    elif context.author.guild_permissions.administrator:
+        return True
+
+    guild_data = get_guild_data(context.guild.id)
+
+    bot_manager_id = guild_data["bot_manager"]
+    if not bot_manager_id:
+        return False
+
+    bot_manage_role = context.guild.get_role(bot_manager_id)
+    if not bot_manage_role:
+        return False
+
+    if bot_manage_role in context.author.roles:
+        return True
+    else:
+        return False

@@ -4,7 +4,7 @@ from time import time, ctime
 import random
 import asyncio
 
-from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway
+from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway, check_if_bot_manager
 from constants import GIVEAWAY_UPDATE_DELAY, DEFAULT_GIVEAWAYS_DATA, WAIT_DELAY, DECLINE_EMOJI
 
 class giveaway(commands.Cog, description = "Commands for managing and entering giveaways."):
@@ -170,7 +170,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                     }))
 
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def giveaway(self, context):
         response = await context.send(embed = create_embed({
