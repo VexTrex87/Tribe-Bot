@@ -21,6 +21,11 @@ class events(commands.Cog, description = "Default events."):
                 "title": f"You do not have permission to run this command",
                 "color": discord.Color.red()
             }))
+        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
+            await context.send(embed = create_embed({
+                "title": f"Incorrect syntax",
+                "color": discord.Color.red()
+            }))
             
     @commands.Cog.listener()
     async def on_connect(self):
