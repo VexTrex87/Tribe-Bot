@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from time import time
 
-from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed
+from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager
 from constants import MAX_LEADERBOARD_FIELDS
 
 class points(commands.Cog, description = "Commands for managing, earning, and viewing points."):
@@ -35,7 +35,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
             }))
             
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def setpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({
@@ -74,7 +74,7 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
             }))
             
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def addpoints(self, context, member: discord.Member, amount: int):
         response = await context.send(embed = create_embed({

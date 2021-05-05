@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 import sys
 
-from helper import create_embed
+from helper import create_embed, check_if_bot_manager
 from constants import ACCEPT_EMOJI
 
 class bot(commands.Cog, description = "Commands for managing the bot."):
@@ -11,7 +11,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
         self.client = client
 
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def run(self, context, *, code):
         response = await context.send(embed = create_embed({
@@ -39,7 +39,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
             }))
         
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def cls(self, context):
         response = await context.send(embed = create_embed({
@@ -62,7 +62,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
             }))
             
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def restart(self, context):
         response = await context.send(embed = create_embed({

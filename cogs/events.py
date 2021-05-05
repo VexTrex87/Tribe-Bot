@@ -11,9 +11,14 @@ class events(commands.Cog, description = "Default events."):
 
     @commands.Cog.listener()
     async def on_command_error(self, context, error):
-        if isinstance(error, commands.CheckFailure):
+        if isinstance(error, commands.NoPrivateMessage):
             await context.send(embed = create_embed({
                 "title": f"Commands must be used in servers",
+                "color": discord.Color.red()
+            }))
+        elif isinstance(error, commands.MissingPermissions) or isinstance(error, commands.CheckFailure):
+            await context.send(embed = create_embed({
+                "title": f"You do not have permission to run this command",
                 "color": discord.Color.red()
             }))
             

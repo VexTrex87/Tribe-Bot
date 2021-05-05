@@ -4,7 +4,7 @@ import time
 import asyncio
 import traceback
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp
+from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager
 from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY
 from cogs.roblox import get_group_name
 
@@ -99,7 +99,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command()
-    @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
+    @commands.check(check_if_bot_manager)
     @commands.guild_only()
     async def settings(self, context):
         response = await context.send(embed = create_embed({
@@ -785,8 +785,8 @@ class default(commands.Cog, description = "Default commands and commands for set
                         continue
 
                     new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["bot_manager"] = value
-                    guild_data["bot_manager"] = value
+                    new_guild_data["bot_manager"] = role.id
+                    guild_data["bot_manager"] = role.mention
                     save_guild_data(new_guild_data)
 
                     await response.edit(embed = create_embed({
