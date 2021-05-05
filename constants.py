@@ -10,6 +10,7 @@ EXTENSIONS = [
 DEFAULT_GUILD_DATA = {
     "guild_id": None,
     "prefix": "?",
+    "bot_manager": None,
 
     "daily_reward": 10,
     "point_channels": [],

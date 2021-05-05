@@ -160,6 +160,13 @@ class default(commands.Cog, description = "Default commands and commands for set
                 else:
                     guild_data["roblox_games"] = "None"
 
+                if guild_data.get("bot_manager"):
+                    bot_manager_id = guild_data["bot_manager"]
+                    if bot_manager_id:
+                        bot_manager = context.guild.get_role(bot_manager_id)
+                        if bot_manager:
+                            guild_data["bot_manager"] = bot_manager.mention
+
                 await response.edit(embed = create_embed({
                     "title": f"Guild Settings",
                     "description": f"Press the {CHANGE_EMOJI} to change settings",
@@ -747,6 +754,43 @@ class default(commands.Cog, description = "Default commands and commands for set
 
                     await response.edit(embed = create_embed({
                         "title": f"Changed game award to {value}",
+                        "inline": True,
+                        "color": discord.Color.green()
+                    }, guild_data))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+                elif name == "bot_manager":
+                    if value.lower() == "none":
+                        new_guild_data = get_guild_data(context.guild.id)
+                        new_guild_data["bot_manager"] = None
+                        guild_data["bot_manager"] = None
+                        save_guild_data(new_guild_data)
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed bot manager role",
+                            "inline": True,
+                            "color": discord.Color.green()
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    role = get_object(context.guild.roles, value)
+                    if not role:
+                        await response.edit(embed = create_embed({
+                            "title": f"Could not find role {role}",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    new_guild_data["bot_manager"] = value
+                    guild_data["bot_manager"] = value
+                    save_guild_data(new_guild_data)
+
+                    await response.edit(embed = create_embed({
+                        "title": f"Changed bot manager role to {role}",
                         "inline": True,
                         "color": discord.Color.green()
                     }, guild_data))
