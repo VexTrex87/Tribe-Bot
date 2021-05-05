@@ -4,12 +4,13 @@ import os
 import sys
 
 from helper import create_embed
+from constants import ACCEPT_EMOJI
 
 class bot(commands.Cog, description = "Commands for managing the bot."):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(description = "Runs code through the bot.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def run(self, context, *, code):
@@ -37,7 +38,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
                 "Code": code
             }))
         
-    @commands.command(description = "Clears the terminal.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
     async def cls(self, context):
@@ -60,16 +61,34 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
                 "Error Message": error_message,
             }))
             
-    @commands.command(description = "Shuts the bot down. If the bot is running on a server, then it will automatically restart.", brief = "administrator")
+    @commands.command()
     @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
     @commands.guild_only()
-    async def shutdown(self, context):
+    async def restart(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Shutting down...",
+            "title": f"Are you sure you want to restart the bot?",
             "color": discord.Color.gold()
         }))
         
-        sys.exit()
+        def check_response(reaction, user):
+            return not user.bot and user == context.author and str(reaction.emoji) == ACCEPT_EMOJI and reaction.message == response
+
+        try:
+            await response.add_reaction(ACCEPT_EMOJI)
+            await self.client.wait_for("reaction_add", check = check_response, timeout = 30)
+        except asyncio.TimeoutError:
+            await response.edit(embed = create_embed({
+                "title": f"You did not respond in time",
+                "color": discord.Color.red()
+            }))
+            return
+        else:
+            await response.edit(embed = create_embed({
+                "title": "Restarting bot...",
+                "color": discord.Color.green()
+            }))
+
+            sys.exit()
 
 def setup(client):
     client.add_cog(bot(client))

@@ -10,15 +10,18 @@ EXTENSIONS = [
 DEFAULT_GUILD_DATA = {
     "guild_id": None,
     "prefix": "?",
+
     "daily_reward": 10,
     "point_channels": [],
     "points_per_message": 1,
     "message_cooldown": 10,
+
     "qotd_channel": None,
     "aotd_keywords": ["qotd", "aotd"],
     "points_per_aotd": 50,
-    "giveaway_channel": None,
-    "giveaway_entry_cost": 1,
+
+    "giveaway_channel": None
+    ,
     "roblox_groups": [],
     "group_award": 500,
     "roblox_games": [],
@@ -36,26 +39,51 @@ DEFAULT_USER_DATA = {
 
 DEFAULT_GIVEAWAYS_DATA = {
     "title": "",
-    "prize": 0,
-    "creator": None,
+    "price": 0,
+    "reward": 0,
     "endsin": None,
     "join_emoji": None,
+    "creator": None,
     "guild_id": None,
     "message_id": None,
     "member_pool": []
 }
 
+COMMANDS = {
+    "Default Commands": {
+        "help": "Retrieves bot commands.",
+        "info": "Retrieves the bot's ping, invite link, uptime, number of servers, and number of users.",
+        "settings": "Retrieves and changes the guild's settings.",
+        "restart": "Restarts the bot.",
+    },
+    "Fun Commands": {
+        "giveaway": "Creates a giveaway.",
+        "points": "Loads a user's points.",
+        "setpoints": "Changes a user's points.",
+        "addpoints": "Adds a user's points.",
+        "daily": "Gives the member their daily reward of points. Can only be used once a day.",
+        "leaderboard": "Retrieves the users with the most points in the server.",
+        "link": "Links a user's Discord account to their Roblox account.",
+    }
+}
+
 PREFIX = "?"
-GIVEAWAY_UPDATE_DELAY = 10
 MAX_LEADERBOARD_FIELDS = 10
+CLIENT_ID = 834455533423427584
+ACCEPT_EMOJI = "✅"
+NEXT_EMOJI = "▶️"
+BACK_EMOJI = "◀️"
+CHANGE_EMOJI = "⚙️"
+WAIT_DELAY = 3
+DECLINE_EMOJI = "❌"
+
+GIVEAWAY_UPDATE_DELAY = 10
 
 GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
 USER_GROUPS_URL = "https://groups.roblox.com/v2/users/USER_ID/groups/roles"
 USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
 USER_STATUS_URL = "https://users.roblox.com/v1/users/USER_ID/status"
 USERS_URL = "https://users.roblox.com/v1/usernames/users"
-
-ACCEPT_EMOJI = "✅"
 GROUPS_UPDATE_DELAY = 60
 GAMES_UPDATE_DELAY = 15
 REQUESTS_CHANNEL = 834455396667359242
@@ -103,20 +131,3 @@ ROBLOX_KEYWORDS = [
     "water",
     "yogurt",
 ]
-
-SETTINGS = {
-    "prefix <new_prefix: string>": "Changes the bot's prefix for the guild.",
-    "daily_reward <points: integer>": "Changes the amount of points members get for running the daily command.",
-    "point_channels <channel_name: string / channel_id: integer / channel_mention: mention>": "Adds/removes the channels that members can earn points for chatting.",
-    "points_per_message <points: integer>": "Changes the amount of points members get for sending messages in verified point channels.",
-    "message_cooldown <seconds: integer>": "Changes the cooldown delay for members earnings points from chatting.",
-    "qotd_channel <channel_name: string / channel_id: integer / channel_mention: mention>": "Changes the channel where QOTD messages are sent and detected.",
-    "aotd_keywords <keyword: string>": "Adds/removes the keywords that will be detected to reward members points for answering the QOTD.",
-    "points_per_aotd <points: intenger>": "Changes the amount of points members will get for answering the QOTD.",
-    "giveaway_channel <channel_name: string / channel_id: integer / channel_mention: mention>": "Changes the channel where giveaways will be announced.",
-    "giveaway_entry_cost <points: intenger>": "The amount of points that will be detected from a member for entering a giveaway.",
-    "roblox_groups <group_id: integer>": "Adds/removes the groups members will be rewarded if they join it.",
-    "group_award <points: integer>": "Changes the amount of points members will get for joining a verified roblox group.",
-    "roblox_games <game_id: intenger>": "Adds/removes the games members will e rewarded if they play it every interval set by the guild.",
-    "game_award <points: integer>": "Changes the amount of points members will get for playing a verified roblox game..",
-}

@@ -2,6 +2,7 @@ from pymongo import MongoClient
 import discord
 import json
 import os
+import math
 
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
 
@@ -153,3 +154,32 @@ def create_embed(info: {} = {}, fields: {} = {}):
 
 def list_to_string(list: []):
     return ", ".join(list)
+
+def format_time(timestamp):
+
+    hours = math.floor(timestamp / 60 / 60)
+    minutes = math.floor((timestamp - (hours * 60 * 60)) / 60)
+    seconds = math.floor((timestamp) - (hours * 60 * 60) - (minutes * 60))
+
+    hours = str(hours)
+    if len(hours) == 1:
+        hours = "0" + hours
+
+    minutes = str(minutes)
+    if len(minutes) == 1:
+        minutes = "0" + minutes
+
+    seconds = str(seconds)
+    if len(seconds) == 1:
+        seconds = "0" + seconds
+
+    timestamp_text = f"{hours}:{minutes}:{seconds}"
+    return timestamp_text
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
