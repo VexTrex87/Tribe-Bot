@@ -49,6 +49,12 @@ class events(commands.Cog, description = "Default events."):
             return
 
         guild_data = get_guild_data(message.guild.id)
+
+        if message.content == "<@!834455533423427584>":
+            await message.channel.send(embed = create_embed({
+                "title": "Prefix is `{}`. Type `{}help` for a list of commands.".format(guild_data["prefix"], guild_data["prefix"])
+            }))
+
         user_data = get_user_data(message.author.id)
         if message.channel.id in guild_data["point_channels"]:
             time_since_last_message = self.recent_messagers.get(message.author.id)
