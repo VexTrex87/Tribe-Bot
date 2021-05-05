@@ -119,8 +119,7 @@ class roblox(commands.Cog):
                     # check if user's group is a valid guild group
                     if not user_group_id in groups:
                         continue
-
-                    # check if user has already been awared for joining this group
+                    
                     if user_group_id in user_data["roblox_groups"]:
                         continue
 
@@ -132,11 +131,12 @@ class roblox(commands.Cog):
                     # award user
                     user_data["points"] += guild_data["group_award"]
                     user_data["roblox_groups"].append(user_group_id)
-                    save_user_data(user_data)
 
                     await user.send(embed = create_embed({
                         "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
                     }))
+
+                save_user_data(user_data)
 
     @tasks.loop(seconds = GAMES_UPDATE_DELAY)
     async def check_games(self):
