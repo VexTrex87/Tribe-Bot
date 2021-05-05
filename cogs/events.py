@@ -11,7 +11,6 @@ class events(commands.Cog, description = "Default events."):
 
     @commands.Cog.listener()
     async def on_command_error(self, context, error):
-        print(error, type(error))
         if isinstance(error, commands.NoPrivateMessage):
             await context.send(embed = create_embed({
                 "title": f"Commands must be used in servers",
