@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-from constants import EXTENSIONS, PREFIX
+from constants import IS_TESTING, EXTENSIONS, PREFIX
 from helper import create_embed, get_guild_data
 
 async def get_prefix(client, context):
@@ -13,6 +13,8 @@ async def get_prefix(client, context):
     return guild_data["prefix"]
 
 TOKEN = os.getenv("TB_TOKEN")
+TEST_TOKEN = os.getenv("TB_TEST_TOKEN")
+
 intents = discord.Intents.default()
 intents.members = True
 client = commands.Bot(command_prefix = get_prefix, intents = intents)
@@ -113,4 +115,4 @@ client.remove_command("help")
 for extension in EXTENSIONS:
     client.load_extension(f"cogs.{extension}")
 
-client.run(TOKEN)
+client.run(IS_TESTING and TEST_TOKEN or TOKEN)

@@ -4,13 +4,14 @@ import json
 import os
 import math
 
-from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA
+from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, IS_TESTING, LIVE_DATABASE, TESTING_DATABASE
 
 MONGO_TOKEN = os.getenv("TB_MONGO_TOKEN")
 cluster = MongoClient(MONGO_TOKEN)
-guild_datastore = cluster["database1"]["guild"]
-user_datastore = cluster["database1"]["user"]
-giveaways_datastore = cluster["database1"]["giveaways"]
+database_name = IS_TESTING and TESTING_DATABASE or LIVE_DATABASE
+guild_datastore = cluster[database_name]["guild"]
+user_datastore = cluster[database_name]["user"]
+giveaways_datastore = cluster[database_name]["giveaways"]
 
 # guild data
 
@@ -156,7 +157,6 @@ def list_to_string(list: []):
     return ", ".join(list)
 
 def format_time(timestamp):
-
     hours = math.floor(timestamp / 60 / 60)
     minutes = math.floor((timestamp - (hours * 60 * 60)) / 60)
     seconds = math.floor((timestamp) - (hours * 60 * 60) - (minutes * 60))
