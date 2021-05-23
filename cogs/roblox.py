@@ -100,7 +100,7 @@ class roblox(commands.Cog):
             # loop through each user in guild
             for user_data in get_all_user_data():
                 # check if user exists
-                user = await guild.fetch_member(user_data["user_id"])
+                user = guild.get_member(user_data["user_id"])
                 if not user:
                     continue
 
@@ -150,7 +150,7 @@ class roblox(commands.Cog):
                 continue
 
             # go through each guild user
-            async for user in guild.fetch_members(limit = None):
+            for user in guild.members:
                 user_data = get_user_data(user.id)
 
                 # check if user has a roblox account
