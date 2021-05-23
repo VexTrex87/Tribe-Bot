@@ -203,3 +203,11 @@ def check_if_bot_manager(context):
         return True
     else:
         return False
+
+def sort_dictionary(dictionary, is_reversed = False):
+    sorted_dictionary = {}
+    sorted_list = sorted(dictionary.items(), key = lambda x: x[1], reverse = is_reversed)
+    for value in sorted_list:
+        sorted_dictionary[value[0]] = value[1]
+    return sorted_dictionary
+
