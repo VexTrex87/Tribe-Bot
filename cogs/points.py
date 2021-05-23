@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from time import time
 
-from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager
+from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager, sort_dictionary
 from constants import MAX_LEADERBOARD_FIELDS
 
 class points(commands.Cog, description = "Commands for managing, earning, and viewing points."):
@@ -161,17 +161,17 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         try:
             all_user_data = get_all_user_data("points")
 
-            guild_user_data = []
+            guild_user_data = {}
             for user_data in all_user_data:
-                member = await context.guild.fetch_member(user_data["user_id"])
+                member = context.guild.get_member(user_data["user_id"])
                 if member:
-                    guild_user_data.append(user_data)
+                    guild_user_data[member.name] = user_data["points"]
 
             fields = {}
-            for rank, user_data in enumerate(guild_user_data):
-                member = await context.guild.fetch_member(user_data["user_id"])
-                points = user_data["points"]
-                fields[f"{rank + 1}. {member.name}"] = f"{points} points"
+            guild_user_data = sort_dictionary(guild_user_data, True)
+            for rank, member_name in enumerate(guild_user_data):
+                points = guild_user_data.get(member_name)
+                fields[f"{rank + 1}. {member_name}"] = f"{points} points"
                 
                 if rank == MAX_LEADERBOARD_FIELDS - 1:
                     break
