@@ -5,7 +5,7 @@ import asyncio
 import traceback
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY
 from cogs.roblox import get_group_name
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
@@ -13,6 +13,37 @@ class default(commands.Cog, description = "Default commands and commands for set
         self.client = client
         self.uptime = time.time()
  
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if DEFAULT_ACTIVITY:
+            await self.client.change_presence(activity=discord.Game(name=DEFAULT_ACTIVITY))
+
+    @commands.command()
+    @commands.check(check_if_bot_manager)
+    @commands.guild_only()
+    async def changeactivity(self, context, *, value: str = None):
+        if value.lower() == "none":
+            value = None
+
+        response = await context.send(embed = create_embed({
+            "title": f"Changing bot's activity to {value}...",
+            "color": discord.Color.gold()
+        }))
+
+        try:
+            await self.client.change_presence(activity=discord.Game(name=value or DEFAULT_ACTIVITY))
+            await response.edit(embed=create_embed({
+                "title": f"Changed bot's activity to {value}",
+                "color": discord.Color.green()
+            }))
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                "title": f"Could not change bot's activity to {value}",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message
+            }))
+
     @commands.command()
     @commands.guild_only()
     async def info(self, context):
