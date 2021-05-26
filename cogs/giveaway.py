@@ -81,12 +81,15 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                         "Ended": endsin_time_text,
                     }))
 
-                    await winner.send(embed = create_embed({
-                        "title": "You won {} points from giveaway {}".format(
-                            giveaway_info["reward"],
-                            giveaway_info["message_id"]
-                        ),
-                    }))
+                    try:
+                        await winner.send(embed = create_embed({
+                            "title": "You won {} points from giveaway {}".format(
+                                giveaway_info["reward"],
+                                giveaway_info["message_id"]
+                            ),
+                        }))
+                    except discord.Forbidden:
+                        print("Cannot DM the winner of giveaway {} {}".format(giveaway_info["message_id"], winner))
 
                     # contact losers
                     for loser_id in giveaway_info["member_pool"]:
@@ -95,10 +98,12 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
                         loser = await guild.fetch_member(loser_id)
                         if loser:
-                            await loser.send(embed = create_embed({
-                                "title": "You did not win giveaway {}".format(giveaway_info["message_id"]),
-                            }))
-
+                            try:
+                                await loser.send(embed = create_embed({
+                                    "title": "You did not win giveaway {}".format(giveaway_info["message_id"]),
+                                }))
+                            except discord.Forbidden:
+                                print("Cannot DM the winner of giveaway {} {}".format(giveaway_info["message_id"], winner))
                 delete_giveaway(giveaway_info["message_id"])
 
     @commands.Cog.listener()
@@ -125,19 +130,25 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
             if str(reaction.emoji) == giveaway_info["join_emoji"]:
                 # check giveaway entry
                 if user.id in giveaway_info["member_pool"]:
-                    await user.send(embed = create_embed({
-                        "title": f"You already entered giveaway {message.id}",
-                        "color": discord.Color.red()
-                    }))
-                    return
+                    try:
+                        await user.send(embed = create_embed({
+                            "title": f"You already entered giveaway {message.id}",
+                            "color": discord.Color.red()
+                        }))
+                        return
+                    except discord.Forbidden:
+                        print("Cannot DM {} to tell them that they already entered giveaway {}".format(user, message.id))
 
                 user_data = get_user_data(user.id)
                 if user_data["points"] < giveaway_info["price"]:
-                    await user.send(embed = create_embed({
-                        "title": f"You do not have enough points to join giveaway {message.id}",
-                        "color": discord.Color.red()
-                    }))
-                    return
+                    try:
+                        await user.send(embed = create_embed({
+                            "title": f"You do not have enough points to join giveaway {message.id}",
+                            "color": discord.Color.red()
+                        }))
+                        return
+                    except discord.Forbidden:
+                        print("Cannot DM {} to tell them that they don't have enough points to join giveaway {}".format(user, message.id))
 
                 # process giveaway entry
                 user_data["points"] -= giveaway_info["price"]
@@ -146,10 +157,13 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 giveaway_info["member_pool"].append(user.id)
                 save_giveaway(giveaway_info)
 
-                await user.send(embed = create_embed({
-                    "title": f"You joined giveaway {message.id}",
-                    "color": discord.Color.green()
-                }))
+                try:
+                    await user.send(embed = create_embed({
+                        "title": f"You joined giveaway {message.id}",
+                        "color": discord.Color.green()
+                    }))
+                except discord.Forbidden:
+                    print("Cannot DM {} to tell them that they joined giveaway {}".format(user, message.id))
             elif str(reaction.emoji) == DECLINE_EMOJI:
                 if user.id == giveaway_info["creator"]:
                     delete_giveaway(message.id)
@@ -164,10 +178,13 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                         "Creator": user.mention
                     }))
 
-                    await user.send(embed = create_embed({
-                        "title": f"Deleted giveaway {message.id}",
-                        "color": discord.Color.green()
-                    }))
+                    try:
+                        await user.send(embed = create_embed({
+                            "title": f"Deleted giveaway {message.id}",
+                            "color": discord.Color.green()
+                        }))
+                    except discord.Forbidden:
+                        print("Cannot DM {} to tell them that they deleted giveaway {}".format(user, message.id))
 
     @commands.command()
     @commands.check(check_if_bot_manager)
