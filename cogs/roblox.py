@@ -132,9 +132,12 @@ class roblox(commands.Cog):
                     user_data["points"] += guild_data["group_award"]
                     user_data["roblox_groups"].append(user_group_id)
 
-                    await user.send(embed = create_embed({
-                        "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
-                    }))
+                    try:
+                        await user.send(embed = create_embed({
+                            "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
+                        }))
+                    except discord.Forbidden:
+                        print("Cannot tell {} that they earned {} points for joining roblox group {}".format(user, guild_data["group_award"], group_name))
 
                 save_user_data(user_data)
 

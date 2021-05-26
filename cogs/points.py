@@ -62,9 +62,12 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "color": discord.Color.green()
             }))
 
-            await member.send(embed = create_embed({
-                "title": f"{context.author} set your points to {amount}",
-            }))
+            try:
+                await member.send(embed = create_embed({
+                    "title": f"{context.author} set your points to {amount}",
+                }))
+            except discord.Forbidden:
+                print("Cannot DM {} to tell them that {} changed their points to {}".format(member, context.author, amount))
         except Exception as error_message:
             await response.edit(embed = create_embed({
                 "title": f"Could not set {member}'s points to {amount}",
@@ -101,9 +104,12 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "color": discord.Color.green()
             }))
 
-            await member.send(embed = create_embed({
-                "title": f"{context.author} gave you {amount} points",
-            }))
+            try:
+                await member.send(embed = create_embed({
+                    "title": f"{context.author} gave you {amount} points",
+                }))
+            except discord.Forbidden:
+                print("Cannot tell {} that {} gave them {} points".format(member, context.author, amount))
         except Exception as error_message:
             await response.edit(embed = create_embed({
                 "title": f"Could not give {amount} points to {member}",

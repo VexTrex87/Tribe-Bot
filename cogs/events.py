@@ -81,10 +81,13 @@ class events(commands.Cog, description = "Default events."):
                         user_data["points"] += points_to_give
                         save_user_data(user_data)
 
-                        await message.author.send(embed = create_embed({
-                            "title": f"You earned {points_to_give} points for answering the QOTD",
-                        }))
-                        
+                        try:
+                            await message.author.send(embed = create_embed({
+                                "title": f"You earned {points_to_give} points for answering the QOTD",
+                            }))
+                        except discord.Forbidden:
+                            print("Cannot DM {} that they earned {} points for answering the QOTD".format(message.author, points_to_give))
+
                         break
 
 def setup(client):
