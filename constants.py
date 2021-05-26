@@ -68,7 +68,7 @@ COMMANDS = {
     }
 }
 
-IS_TESTING = True
+IS_TESTING = False
 LIVE_DATABASE = "database1"
 TESTING_DATABASE = "database2"
 
