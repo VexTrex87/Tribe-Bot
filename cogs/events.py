@@ -69,8 +69,9 @@ class events(commands.Cog, description = "Default events."):
         if qotd_channel:
             if message.channel == qotd_channel:
                 for user_data in get_all_user_data():
-                    user_data["answered_qotd"] = False
-                    save_user_data(user_data)
+                    if message.guild.get_member(user_data["user_id"]):
+                        user_data["answered_qotd"] = False
+                        save_user_data(user_data)
 
             for aotd_keyword in guild_data["aotd_keywords"]:
                 if aotd_keyword in message.content.lower() or qotd_channel.mention in message.content.lower():
