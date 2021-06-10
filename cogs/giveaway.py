@@ -38,7 +38,14 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
 
             if timestamp >= giveaway_info["endsin"]:
                 # end giveaway
-                message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
+                message = None
+                try:
+                    message = await giveaway_channel.fetch_message(giveaway_info["message_id"])
+                except discord.errors.NotFound:
+                    print("Could not find giveaway message {}".format(giveaway_info["message_id"]))
+                    delete_giveaway(giveaway_info["message_id"])
+                    continue
+                
                 title = giveaway_info["title"]
                 prize = giveaway_info["reward"]
                 endsin_time_text = ctime(giveaway_info["endsin"])
@@ -383,7 +390,6 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                 "color": discord.Color.red()
             }))
         except Exception as error_message:
-            traceback.print_exc()
             await response.edit(embed = create_embed({
                 "title": "Could not create giveaway",
                 "color": discord.Color.red()
