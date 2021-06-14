@@ -3,9 +3,10 @@ from discord.ext import commands
 import time
 import asyncio
 import traceback
+import random
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES
 from cogs.roblox import get_group_name
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
@@ -841,6 +842,27 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "color": discord.Color.red()
             }, {
                 "Error Message": error_message
+            }))
+
+    @commands.command(aliases = ["8ball"])
+    async def eightball(self, context, *, question: str):
+        response = await context.send(embed = create_embed({
+            "title": "Loading response...",
+            "color": discord.Color.gold()   
+        }))
+
+        try:
+            answer = random.choice(EIGHTBALL_RESPONSES)
+            await response.edit(embed = create_embed({
+                "title": answer
+            }))
+        except Exception as error_message:
+            await response.edit(embed = create_embed({
+                "title": "Could not load response",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message,
+                "Question": question,
             }))
 
 def setup(client):
