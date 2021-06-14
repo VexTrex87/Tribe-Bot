@@ -7,6 +7,27 @@ import asyncio
 from helper import get_user_data, save_user_data, get_guild_data, save_guild_data, get_all_guild_data, get_object, parse_to_timestamp, create_embed, get_giveaway, save_giveaway, get_all_giveaways, delete_giveaway, create_giveaway, check_if_bot_manager
 from constants import GIVEAWAY_UPDATE_DELAY, DEFAULT_GIVEAWAYS_DATA, WAIT_DELAY, DECLINE_EMOJI
 
+def check_if_giveaway_manager(context):
+    if context.author == context.guild.owner:
+        return True
+    elif context.author.guild_permissions.administrator:
+        return True
+
+    guild_data = get_guild_data(context.guild.id)
+
+    giveaway_manager_id = guild_data["giveaway_manager"]
+    if not giveaway_manager_id:
+        return False
+
+    bot_manage_role = context.guild.get_role(giveaway_manager_id)
+    if not bot_manage_role:
+        return False
+
+    if bot_manage_role in context.author.roles:
+        return True
+    else:
+        return False
+
 class giveaway(commands.Cog, description = "Commands for managing and entering giveaways."):
     def __init__(self, client):
         self.client = client
@@ -194,7 +215,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                         print("Cannot DM {} to tell them that they deleted giveaway {}".format(user, message.id))
 
     @commands.command()
-    @commands.check(check_if_bot_manager)
+    @commands.check(check_if_giveaway_manager)
     @commands.guild_only()
     async def giveaway(self, context):
         response = await context.send(embed = create_embed({

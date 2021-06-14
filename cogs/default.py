@@ -199,6 +199,13 @@ class default(commands.Cog, description = "Default commands and commands for set
                         if bot_manager:
                             guild_data["bot_manager"] = bot_manager.mention
 
+                if guild_data.get("giveaway_manager"):
+                    giveaway_manager_id = guild_data["giveaway_manager"]
+                    if giveaway_manager_id:
+                        giveaway_manager = context.guild.get_role(giveaway_manager_id)
+                        if giveaway_manager:
+                            guild_data["giveaway_manager"] = giveaway_manager.mention
+
                 await response.edit(embed = create_embed({
                     "title": f"Guild Settings",
                     "description": f"Press the {CHANGE_EMOJI} to change settings",
@@ -819,6 +826,43 @@ class default(commands.Cog, description = "Default commands and commands for set
                     new_guild_data = get_guild_data(context.guild.id)
                     new_guild_data["bot_manager"] = role.id
                     guild_data["bot_manager"] = role.mention
+                    save_guild_data(new_guild_data)
+
+                    await response.edit(embed = create_embed({
+                        "title": f"Changed bot manager role to {role}",
+                        "inline": True,
+                        "color": discord.Color.green()
+                    }, guild_data))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+                elif name == "giveaway_manager":
+                    if value.lower() == "none":
+                        new_guild_data = get_guild_data(context.guild.id)
+                        new_guild_data["giveaway_manager"] = None
+                        guild_data["giveaway_manager"] = None
+                        save_guild_data(new_guild_data)
+
+                        await response.edit(embed = create_embed({
+                            "title": f"Removed giveaway manager role",
+                            "inline": True,
+                            "color": discord.Color.green()
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    role = get_object(context.guild.roles, value)
+                    if not role:
+                        await response.edit(embed = create_embed({
+                            "title": f"Could not find role {role}",
+                            "color": discord.Color.red(),
+                            "inline": True,
+                        }, guild_data))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+
+                    new_guild_data = get_guild_data(context.guild.id)
+                    new_guild_data["giveaway_manager"] = role.id
+                    guild_data["giveaway_manager"] = role.mention
                     save_guild_data(new_guild_data)
 
                     await response.edit(embed = create_embed({

@@ -108,7 +108,7 @@ def delete_giveaway(message_id: int):
 
 # other
 
-def get_object(objects: [], value):
+def get_object(objects: list, value):
     for obj in objects:
         try:
             if obj.name == value or value == obj.mention or obj.id == int(value):
@@ -131,7 +131,7 @@ def parse_to_timestamp(time):
     else:
         return int(time)
 
-def create_embed(info: {} = {}, fields: {} = {}):
+def create_embed(info: dict = {}, fields: dict = {}):
     embed = discord.Embed(
         title = info.get("title") or "",
         description = info.get("description") or "",
@@ -153,7 +153,7 @@ def create_embed(info: {} = {}, fields: {} = {}):
     
     return embed
 
-def list_to_string(list: []):
+def list_to_string(list: list):
     return ", ".join(list)
 
 def format_time(timestamp):
