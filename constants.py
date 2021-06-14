@@ -58,6 +58,7 @@ COMMANDS = {
         "restart": "Restarts the bot.",
     },
     "Fun Commands": {
+        "8ball <question>" : "Responds with a random yes/no type answer.",
         "giveaway": "Creates a giveaway.",
         "points": "Loads a user's points.",
         "setpoints": "Changes a user's points.",
