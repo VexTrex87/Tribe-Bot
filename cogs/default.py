@@ -5,8 +5,8 @@ import asyncio
 import traceback
 import random
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES
+from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS
 from cogs.roblox import get_group_name
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
@@ -889,6 +889,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command(aliases = ["8ball"])
+    @commands.guild_only()
     async def eightball(self, context, *, question: str):
         response = await context.send(embed = create_embed({
             "title": "Loading response...",
@@ -907,6 +908,72 @@ class default(commands.Cog, description = "Default commands and commands for set
             }, {
                 "Error Message": error_message,
                 "Question": question,
+            }))
+
+    @commands.command()
+    @commands.guild_only()
+    async def messageleaderboard(self, context):
+        response = await context.send(embed = create_embed({
+            "title": "Loading message leaderboard...",
+            "description": f"React with {ACCEPT_EMOJI} to be pinged when the message leaderboard is done. This process could hours at most depending on the amount of messages in a server.",
+            "color": discord.Color.gold()
+        }))
+
+        await response.add_reaction(ACCEPT_EMOJI)
+
+        try:
+            members = {}
+            async def get_messages_in_guild(guild):
+                for channel in guild.text_channels:
+                    messages = await channel.history(limit = None).flatten()
+                    for message in messages:
+                        author = message.author
+                        if not guild.get_member(author.id):
+                            continue
+
+                        if not members.get(author.name):
+                            members[author.name] = 1
+                        else:
+                            members[author.name] += 1
+
+            if context.guild:
+                await get_messages_in_guild(context.guild)
+            else:
+                for guild in self.client.guilds:
+                    await get_messages_in_guild(guild)
+
+            await response.edit(embed = create_embed({
+                "title": f"Loading message leaderboard (sorting leaderboard)...",
+                "description": f"React with {ACCEPT_EMOJI} to be pinged when the message leaderboard is done",
+                "color": discord.Color.gold()
+            }))
+
+            members = sort_dictionary(members, True)
+            members = get_first_n_items(members, MAX_LEADERBOARD_FIELDS)
+
+            await response.edit(embed = create_embed({
+                "title": context.guild and "Message Leaderboard (Current Server)" or "Message Leaderboard (All Servers)"
+            }, members))
+
+            response2 = await response.channel.fetch_message(response.id)
+            for reaction in response2.reactions:
+                if str(reaction.emoji) == ACCEPT_EMOJI:
+                    users = [] 
+                    async for user in reaction.users():
+                        if not user.bot:
+                            users.append(user.mention)
+
+                    if len(users) > 0:
+                        ping = " ".join(users)
+                        await context.send(" ".join(users))
+                    break
+
+        except Exception as error_message:
+            await response.edit(embed = create_embed({
+                "title": "Could not load message leaderboard",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message
             }))
 
 def setup(client):
