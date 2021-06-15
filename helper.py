@@ -186,6 +186,9 @@ def is_number(s):
         return False
 
 def check_if_bot_manager(context):
+    if not context.guild:
+        return False
+        
     if context.author == context.guild.owner:
         return True
     elif context.author.guild_permissions.administrator:
