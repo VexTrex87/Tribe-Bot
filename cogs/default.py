@@ -61,7 +61,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             users = len([member for member in self.client.get_all_members()])
 
             await response.edit(embed = create_embed({
-                "title": f"Bot Info",
+                "title": f"Invite",
                 "url": invite_url,
             }, {
                 "Ping": f"{ping} ms",
