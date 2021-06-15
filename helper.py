@@ -3,10 +3,12 @@ import discord
 import json
 import os
 import math
-
+from dotenv import load_dotenv
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, IS_TESTING, LIVE_DATABASE, TESTING_DATABASE
 
-MONGO_TOKEN = os.getenv("TB_MONGO_TOKEN")
+load_dotenv('.vscode/.env')
+
+MONGO_TOKEN = os.getenv("DB_TOKEN")
 cluster = MongoClient(MONGO_TOKEN)
 database_name = IS_TESTING and TESTING_DATABASE or LIVE_DATABASE
 guild_datastore = cluster[database_name]["guild"]
