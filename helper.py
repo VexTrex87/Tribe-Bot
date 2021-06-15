@@ -211,3 +211,8 @@ def sort_dictionary(dictionary, is_reversed = False):
         sorted_dictionary[value[0]] = value[1]
     return sorted_dictionary
 
+def get_first_n_items(dictionary, number):
+    new_dictionary = {}
+    for index in list(dictionary)[:number]:
+        new_dictionary[index] = dictionary.get(index)
+    return new_dictionary
