@@ -10,7 +10,6 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         self.client = client
 
     @commands.command()
-    @commands.guild_only()
     async def points(self, context, member: discord.Member = None):
         if not member:
             member = context.author
@@ -162,7 +161,6 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
             }))
             
     @commands.command()
-    @commands.guild_only()
     async def leaderboard(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading leaderboard...",
@@ -170,18 +168,21 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         }))
 
         try:
-            all_user_data = get_all_user_data("points")
-
-            guild_user_data = {}
-            for user_data in all_user_data:
-                member = context.guild.get_member(user_data["user_id"])
-                if member:
-                    guild_user_data[member.name] = user_data["points"]
+            users = {}
+            for user_data in get_all_user_data("points"):
+                if context.guild:
+                    member = context.guild.get_member(user_data["user_id"])
+                    if member:
+                        users[member.name] = user_data["points"]
+                else:
+                    user = self.client.get_user(user_data["user_id"])
+                    if user:
+                        users[user.name] = user_data["points"]
 
             fields = {}
-            guild_user_data = sort_dictionary(guild_user_data, True)
-            for rank, member_name in enumerate(guild_user_data):
-                points = guild_user_data.get(member_name)
+            users = sort_dictionary(users, True)
+            for rank, member_name in enumerate(users):
+                points = users.get(member_name)
                 fields[f"{rank + 1}. {member_name}"] = f"{points} points"
                 
                 if rank == MAX_LEADERBOARD_FIELDS - 1:

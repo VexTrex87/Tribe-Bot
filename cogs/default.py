@@ -20,8 +20,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             await self.client.change_presence(activity=discord.Game(name=DEFAULT_ACTIVITY))
 
     @commands.command()
-    @commands.check(check_if_bot_manager)
-    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     async def changeactivity(self, context, *, value: str = None):
         if value.lower() == "none":
             value = None
@@ -46,7 +45,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command()
-    @commands.guild_only()
     async def info(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading bot info...",
@@ -78,7 +76,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
  
     @commands.command()
-    @commands.guild_only()
     async def help(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Loading commands...",
@@ -116,8 +113,11 @@ class default(commands.Cog, description = "Default commands and commands for set
                         else:
                             current_page -= 1
 
-                    await response.edit(embed = pages[current_page])
-                    await response.remove_reaction(reaction.emoji, user)
+                    if context.guild:
+                        await response.edit(embed = pages[current_page])
+                        await response.remove_reaction(reaction.emoji, user)
+                    else:
+                        response = await context.send(embed = pages[current_page])
                 except asyncio.TimeoutError:
                     await response.edit(embed = pages[current_page])
                     await response.clear_reactions()
@@ -131,7 +131,7 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command()
-    @commands.check(check_if_bot_manager)
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     @commands.guild_only()
     async def settings(self, context):
         response = await context.send(embed = create_embed({
@@ -889,7 +889,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command(aliases = ["8ball"])
-    @commands.guild_only()
     async def eightball(self, context, *, question: str):
         response = await context.send(embed = create_embed({
             "title": "Loading response...",
@@ -911,7 +910,6 @@ class default(commands.Cog, description = "Default commands and commands for set
             }))
 
     @commands.command()
-    @commands.guild_only()
     async def messageleaderboard(self, context):
         response = await context.send(embed = create_embed({
             "title": "Loading message leaderboard...",

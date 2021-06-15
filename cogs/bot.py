@@ -11,8 +11,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
         self.client = client
 
     @commands.command()
-    @commands.check(check_if_bot_manager)
-    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     async def run(self, context, *, code):
         response = await context.send(embed = create_embed({
             "title": f"Running code...",
@@ -39,8 +38,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
             }))
         
     @commands.command()
-    @commands.check(check_if_bot_manager)
-    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     async def cls(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Clearing terminal...",
@@ -62,8 +60,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
             }))
             
     @commands.command()
-    @commands.check(check_if_bot_manager)
-    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     async def restart(self, context):
         response = await context.send(embed = create_embed({
             "title": f"Are you sure you want to restart the bot?",
