@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from time import time
-
+import time
+import math
 from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager, sort_dictionary
 from constants import MAX_LEADERBOARD_FIELDS
 
@@ -48,8 +48,6 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 await response.edit(embed = create_embed({
                     "title": f"The amount of points ({amount}) cannot be less than 0",
                     "color": discord.Color.red()
-                }, {
-                    "Error Message": error_message
                 }))
                 return
 
@@ -90,8 +88,6 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 await response.edit(embed = create_embed({
                     "title": f"The amount of points ({amount}) cannot be less than 0",
                     "color": discord.Color.red()
-                }, {
-                    "Error Message": error_message
                 }))
                 return
 
@@ -127,25 +123,34 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
         }))
         
         try:
-            guild_data = get_guild_data(context.guild.id)
             user_data = get_user_data(context.author.id)
+            # if 24 hours has not gone by
+            if user_data["claimed_daily_reward_time"] and time.time() - user_data["claimed_daily_reward_time"] < 60 * 60 * 24:
+                time_remaining_text = ""
+                seconds = (60 * 60 * 24) - math.floor(time.time() - user_data["claimed_daily_reward_time"])
+                if seconds < 60:
+                    time_remaining_text = f"{seconds} second(s)"
+                else:
+                    minutes = math.floor(seconds / 60)
+                    if minutes < 60:
+                        time_remaining_text = f"{minutes} minute(s)"
+                    else:
+                        hours = math.floor(minutes / 60)
+                        time_remaining_text = f"{hours} hour(s)"
 
-            seconds_in_a_day = 60 * 60 * 24
-            if user_data["claimed_daily_reward_time"] and time() - user_data["claimed_daily_reward_time"] < seconds_in_a_day:
-                hours_to_wait = round((seconds_in_a_day - (time() - user_data["claimed_daily_reward_time"])) / 60 / 60)
-                await response.edit(embed = create_embed({
-                    "title": f"You must wait {hours_to_wait} hour(s) to claim your daily reward",
+                await response.edit(embed=create_embed({
+                    "title": f"You must wait {time_remaining_text} to claim your daily reward",
                     "color": discord.Color.red()
                 }))
                 return
-
-            daily_reward = guild_data["daily_reward"]
-            user_data["points"] += daily_reward
-            user_data["claimed_daily_reward_time"] = time()
+            
+            guild_settings = get_guild_data(context.guild.id)
+            user_data["claimed_daily_reward_time"] = round(time.time())
+            user_data["points"] += guild_settings["daily_reward"]
             save_user_data(user_data)
 
             await response.edit(embed = create_embed({
-                "title": f"You claimed your daily reward and earned {daily_reward} points!",
+                "title": f"You claimed your daily reward",
                 "color": discord.Color.green()
             }))
         except Exception as error_message:
