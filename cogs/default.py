@@ -5,7 +5,7 @@ import asyncio
 import traceback
 import random
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items
+from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
 from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS
 from cogs.roblox import get_group_name
 
@@ -525,29 +525,6 @@ class default(commands.Cog, description = "Default commands and commands for set
         self.client = client
         self.uptime = time.time()
  
-    async def wait_for_reaction(self, context, emoji, timeout=30):
-        def check_response(reaction, user):
-            if user == context.author:
-                if type(emoji) == list and reaction.emoji in emoji or reaction.emoji == emoji:
-                    if reaction.message.channel == context.channel:
-                        return True
-
-        try:
-            reaction, user = await self.client.wait_for("reaction_add", check=check_response, timeout=timeout)
-            return reaction, user
-        except asyncio.TimeoutError:
-            return None, None
-
-    async def wait_for_message(self, context, timeout=30):
-        def check_message(message):
-            return message.author == context.author
-
-        try:
-            message = await self.client.wait_for("message", check=check_message, timeout=timeout)
-            return message
-        except asyncio.TimeoutError:
-            return None
-
     @commands.Cog.listener()
     async def on_ready(self):
         if DEFAULT_ACTIVITY:
@@ -631,7 +608,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await response.add_reaction(BACK_EMOJI)
                     await response.add_reaction(NEXT_EMOJI)
 
-                    reaction, user = await self.wait_for_reaction(context, [BACK_EMOJI, NEXT_EMOJI], timeout=60)
+                    reaction, user = await wait_for_reaction(self.client, context, [BACK_EMOJI, NEXT_EMOJI], timeout=60)
                     if str(reaction.emoji) == NEXT_EMOJI:
                         if current_page + 1 >= len(pages):
                             current_page = len(pages) - 1
@@ -715,7 +692,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                 }, guild_data))
 
                 await response.add_reaction(CHANGE_EMOJI)
-                reaction, user = await self.wait_for_reaction(context, CHANGE_EMOJI, 30)
+                reaction, user = await wait_for_reaction(self.client, context, CHANGE_EMOJI, 30)
                 if not reaction:
                     await response.edit(embed = create_embed({
                         "title": f"Guild Settings",
@@ -732,7 +709,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                message = await self.wait_for_message(context, 30)
+                message = await wait_for_message(self.client, context, 30)
                 if not message:
                     await response.edit(embed = create_embed({
                         "title": f"You did not enter a setting to change",
@@ -760,7 +737,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                message = await self.wait_for_message(context, 30)
+                message = await wait_for_message(self.client, context, 30)
                 if not message:
                     await response.edit(embed = create_embed({
                         "title": f"You did not enter a setting to change",
