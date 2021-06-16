@@ -5,9 +5,520 @@ import asyncio
 import traceback
 import random
 
-from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, DEFAULT_GUILD_DATA, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS
+from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS
 from cogs.roblox import get_group_name
+
+class change_settings():
+    async def prefix(self, context, response, guild_data, value):
+        value = value.lower()
+        if len(value) > 1:
+            await response.edit(embed = create_embed({
+                "title": "Prefix must be one letter",
+                "inline": True,
+                "color": discord.Color.red()
+            }, guild_data))
+            return
+        elif is_number(value):
+            await response.edit(embed = create_embed({
+                "title": "Prefix must be a letter",
+                "inline": True,
+                "color": discord.Coselor.red()
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["prefix"], new_guild_data["prefix"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed prefix to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def message_cooldown(self, context, response, guild_data, value):
+        seconds = parse_to_timestamp(value)
+        if not seconds:
+            await response.edit(embed = create_embed({
+                "title": "Could not parse {value}",
+                "inline": True,
+                "color": discord.Color.red(),
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["message_cooldown"], new_guild_data["message_cooldown"] = seconds, seconds
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed message cooldown to {value} ({seconds} seconds)",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def daily_reward(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The daily reward ({value}) must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+        
+        value = int(value)
+        if value < 0:
+            await response.edit(embed = create_embed({
+                "title": f"The daily reward ({value}) must be greater than or equal to 0",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["daily_reward"], new_guild_data["daily_reward"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed daily reward to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def point_channels(self, context, response, guild_data, value):
+        channel = get_object(context.guild.text_channels, value)
+        if not channel:
+            await response.edit(embed = create_embed({
+                "title": f"Could not find text channel {channel or value}",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        if channel.id in new_guild_data["point_channels"]:
+            new_guild_data["point_channels"].remove(channel.id)
+            save_guild_data(new_guild_data)
+
+            if len(new_guild_data["point_channels"]) > 0:
+                point_channels = []
+                for point_channel_id in new_guild_data["point_channels"]:
+                    point_channel = context.guild.get_channel(point_channel_id)
+                    if point_channel:
+                        point_channels.append(point_channel.mention)
+                guild_data["point_channels"] = ", ".join(point_channels)
+            else:
+                guild_data["point_channels"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed text channel {channel} from point channels",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            new_guild_data["point_channels"].append(channel.id)
+            guild_data["point_channels"] += f", {channel.mention}"
+            save_guild_data(new_guild_data)
+
+            if new_guild_data.get("point_channels") and len(new_guild_data["point_channels"]) > 0:
+                point_channels = []
+                for point_channel_id in new_guild_data["point_channels"]:
+                    point_channel = context.guild.get_channel(point_channel_id)
+                    if point_channel:
+                        point_channels.append(point_channel.mention)
+                guild_data["point_channels"] = ", ".join(point_channels)
+            else:
+                guild_data["point_channels"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Added text channel {channel} to point channels",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def points_per_message(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The points per message ({value}) must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+        
+        value = int(value)
+        if value < 0:
+            await response.edit(embed = create_embed({
+                "title": f"The points per message ({value}) must be greater than or equal to 0",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["points_per_message"], new_guild_data["points_per_message"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed points per message to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def qotd_channel(self, context, response, guild_data, value):
+        if value.lower() == "none":
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["qotd_channel"], guild_data["qotd_channel"] = None, None
+            save_guild_data(new_guild_data)
+            
+            await response.edit(embed = create_embed({
+                "title": f"Removed QOTD channel",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            channel = get_object(context.guild.text_channels, value)
+            if not channel:
+                await response.edit(embed = create_embed({
+                    "title": f"Could not find text channel {channel or value}",
+                    "color": discord.Color.red(),
+                    "inline": True,
+                }, guild_data))
+                return
+
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["qotd_channel"] = channel.id
+            guild_data["qotd_channel"] = channel.mention
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Changed QOTD channel to {channel}",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def aotd_keywords(self, context, response, guild_data, value):
+        new_guild_data = get_guild_data(context.guild.id)
+        value = value.lower()
+        if value in new_guild_data["aotd_keywords"]:
+            new_guild_data["aotd_keywords"].remove(value)
+            guild_data["aotd_keywords"] = len(new_guild_data["aotd_keywords"]) > 0 and ", ".join(new_guild_data["aotd_keywords"]) or "None"
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed {value} as an AOTD keywords",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            new_guild_data["aotd_keywords"].append(value)
+            guild_data["aotd_keywords"] = len(new_guild_data["aotd_keywords"]) > 0 and ", ".join(new_guild_data["aotd_keywords"]) or "None"
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Added {value} as an AOTD keywords",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def points_per_aotd(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The points per AOTD ({value}) must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+        
+        value = int(value)
+        if value < 0:
+            await response.edit(embed = create_embed({
+                "title": f"The points per AOTD ({value}) must be greater than or equal to 0",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["points_per_aotd"], new_guild_data["points_per_aotd"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed points per AOTD to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def giveaway_channel(self, context, response, guild_data, value):
+        if value.lower() == "none":
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["giveaway_channel"], guild_data["giveaway_channel"] = None, None
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed giveaway channel",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            channel = get_object(context.guild.text_channels, value)
+            if not channel:
+                await response.edit(embed = create_embed({
+                    "title": f"Could not find text channel {channel or value}",
+                    "color": discord.Color.red(),
+                    "inline": True,
+                }, guild_data))
+                return
+
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["giveaway_channel"] = channel.id
+            guild_data["giveaway_channel"] = channel.mention
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Changed giveaway channel to {channel}",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def roblox_groups(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The roblox group ID {value} must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        group_name = await get_group_name(value)
+        if not group_name:
+            await response.edit(embed = create_embed({
+                "title": f"Could not find roblox group with ID {value}",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        if value in new_guild_data["roblox_groups"]:
+            new_guild_data["roblox_groups"].remove(value)
+            save_guild_data(new_guild_data)
+
+            if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
+                roblox_groups = []
+                for group_id in new_guild_data["roblox_groups"]:
+                    group_name = await get_group_name(group_id)
+                    if group_name:
+                        roblox_groups.append(f"{group_name} ({group_id})")
+                guild_data["roblox_groups"] = ", ".join(roblox_groups)
+            else:
+                guild_data["roblox_groups"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed {group_name} ({value}) as a roblox group",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            new_guild_data["roblox_groups"].append(value)
+            save_guild_data(new_guild_data)
+
+            if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
+                roblox_groups = []
+                for group_id in new_guild_data["roblox_groups"]:
+                    group_name = await get_group_name(group_id)
+                    if group_name:
+                        roblox_groups.append(f"{group_name} ({group_id})")
+                guild_data["roblox_groups"] = ", ".join(roblox_groups)
+            else:
+                guild_data["roblox_groups"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Added {group_name} ({value}) as a roblox group",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def roblox_games(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The roblox game ID {value} must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        if value in new_guild_data["roblox_games"]:
+            new_guild_data["roblox_games"].remove(value)
+            save_guild_data(new_guild_data)
+
+            if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
+                guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
+            else:
+                guild_data["roblox_games"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed game with id {value} as a roblox game",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            new_guild_data["roblox_games"].append(value)
+            save_guild_data(new_guild_data)
+
+            if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
+                guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
+            else:
+                guild_data["roblox_games"] = "None"
+
+            await response.edit(embed = create_embed({
+                "title": f"Added game with id {value} as a roblox game",
+                "color": discord.Color.green(),
+                "inline": True,
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def group_award(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The group award ({value}) must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        value = int(value)
+        if value < 0:
+            await response.edit(embed = create_embed({
+                "title": f"The group award ({value}) must be greater than or equal to 0",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        new_guild_data["group_award"], guild_data["group_award"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed group award to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def game_award(self, context, response, guild_data, value):
+        if not is_number(value):
+            await response.edit(embed = create_embed({
+                "title": f"The game award ({value}) must be a number",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        value = int(value)
+        if value < 0:
+            await response.edit(embed = create_embed({
+                "title": f"The game award ({value}) must be greater than or equal to 0",
+                "color": discord.Color.red(),
+                "inline": True,
+            }, guild_data))
+            return
+
+        new_guild_data = get_guild_data(context.guild.id)
+        guild_data["game_award"], new_guild_data["game_award"] = value, value
+        save_guild_data(new_guild_data)
+
+        await response.edit(embed = create_embed({
+            "title": f"Changed game award to {value}",
+            "inline": True,
+            "color": discord.Color.green()
+        }, guild_data))
+        return guild_data, new_guild_data
+    
+    async def bot_manager(self, context, response, guild_data, value):
+        if value.lower() == "none":
+            new_guild_data = get_guild_data(context.guild.id)
+            guild_data["bot_manager"], new_guild_data["bot_manager"] = None, None
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed bot manager role",
+                "inline": True,
+                "color": discord.Color.green()
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            role = get_object(context.guild.roles, value)
+            if not role:
+                await response.edit(embed = create_embed({
+                    "title": f"Could not find role {role}",
+                    "color": discord.Color.red(),
+                    "inline": True,
+                }, guild_data))
+                return
+
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["bot_manager"] = role.id
+            guild_data["bot_manager"] = role.mention
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Changed bot manager role to {role}",
+                "inline": True,
+                "color": discord.Color.green()
+            }, guild_data))
+            return guild_data, new_guild_data
+    
+    async def giveaway_manager(self, context, response, guild_data, value):
+        if value.lower() == "none":
+            new_guild_data = get_guild_data(response.id)
+            guild_data["giveaway_manager"], new_guild_data["giveaway_manager"] = None, None
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Removed giveaway manager role",
+                "inline": True,
+                "color": discord.Color.green()
+            }, guild_data))
+            return guild_data, new_guild_data
+        else:
+            role = get_object(context.guild.roles, value)
+            if not role:
+                await response.edit(embed = create_embed({
+                    "title": f"Could not find role {value}",
+                    "color": discord.Color.red(),
+                    "inline": True,
+                }, guild_data))
+                return
+
+            new_guild_data = get_guild_data(context.guild.id)
+            new_guild_data["giveaway_manager"] = role.id
+            guild_data["giveaway_manager"] = role.mention
+            save_guild_data(new_guild_data)
+
+            await response.edit(embed = create_embed({
+                "title": f"Changed bot manager role to {role}",
+                "inline": True,
+                "color": discord.Color.green()
+            }, guild_data))
+            return guild_data, new_guild_data
 
 class default(commands.Cog, description = "Default commands and commands for settings."):
     def __init__(self, client):
@@ -93,15 +604,11 @@ class default(commands.Cog, description = "Default commands and commands for set
             await response.edit(embed = pages[current_page])
 
             while True:
-                def check_response(reaction, user):
-                    return user == context.author and reaction.message == response
-
                 try:
                     await response.add_reaction(BACK_EMOJI)
                     await response.add_reaction(NEXT_EMOJI)
 
-                    reaction, user = await self.client.wait_for("reaction_add", check = check_response, timeout = 60)
-
+                    reaction, user = await wait_for_reaction(self.client, context, [BACK_EMOJI, NEXT_EMOJI], timeout=60)
                     if str(reaction.emoji) == NEXT_EMOJI:
                         if current_page + 1 >= len(pages):
                             current_page = len(pages) - 1
@@ -141,86 +648,52 @@ class default(commands.Cog, description = "Default commands and commands for set
         
         try:
             while True:
-                guild_data = get_guild_data(context.guild.id)
-
                 # format settings
+                guild_data = get_guild_data(context.guild.id)
+                for key, value in guild_data.copy().items():
+                    if key in ["_id", "guild_id"]:
+                        guild_data.pop(key)
+                    elif key in ["aotd_keywords", "roblox_games"]:
+                        guild_data[key] = len(value) > 0 and ", ".join(value) or "None"
+                    elif key in ["qotd_channel", "giveaway_channel"]:
+                        channel = context.guild.get_channel(value or 0)
+                        if channel:
+                            guild_data[key] = channel.mention
+                    elif key in ["point_channels"]:
+                        if len(value) > 0:
+                            channels = []
+                            for channel_id in guild_data[key]:
+                                channel = context.guild.get_channel(channel_id)
+                                if channel:
+                                    channels.append(channel.mention)
+                            guild_data[key] = ", ".join(channels)
+                        else:
+                            guild_data[key] = "None"
+                    elif key in ["bot_manager", "giveaway_manager"]:
+                        role = context.guild.get_role(value or 0)
+                        if role:
+                            guild_data[key] = role.mention
+                    elif key in ["roblox_groups"]:
+                        if len(value) > 0:
+                            roblox_groups = []
+                            for group_id in value:
+                                group_name = await get_group_name(group_id)
+                                if group_name:
+                                    roblox_groups.append(f"{group_name} ({group_id})")
+                            guild_data["roblox_groups"] = ", ".join(roblox_groups)
+                        else:
+                            guild_data["roblox_groups"] = "None"
 
-                if guild_data.get("_id"):
-                    guild_data.pop("_id")
-                if guild_data.get("guild_id"):
-                    guild_data.pop("guild_id")
-   
-                if guild_data.get("point_channels") and len(guild_data["point_channels"]) > 0:
-                    point_channels = []
-                    for point_channel_id in guild_data["point_channels"]:
-                        point_channel = context.guild.get_channel(point_channel_id)
-                        if point_channel:
-                            point_channels.append(point_channel.mention)
-                    guild_data["point_channels"] = ", ".join(point_channels)
-                else:
-                    guild_data["point_channels"] = "None"
-
-                qotd_channel_id = guild_data.get("qotd_channel") 
-                if qotd_channel_id:
-                    qotd_channel = context.guild.get_channel(qotd_channel_id)
-                    if qotd_channel:
-                        guild_data["qotd_channel"] = qotd_channel.mention
-
-                if guild_data.get("aotd_keywords") and len(guild_data["aotd_keywords"]) > 0:
-                    guild_data["aotd_keywords"] = ", ".join(guild_data["aotd_keywords"])
-                else:
-                    guild_data["aotd_keywords"] = "None"
-
-                giveaway_channel_id = guild_data.get("giveaway_channel") 
-                if giveaway_channel_id:
-                    giveaway_channel = context.guild.get_channel(giveaway_channel_id)
-                    if giveaway_channel:
-                        guild_data["giveaway_channel"] = giveaway_channel.mention
-
-                if guild_data.get("roblox_groups") and len(guild_data["roblox_groups"]) > 0:
-                    roblox_groups = []
-                    for group_id in guild_data["roblox_groups"]:
-                        group_name = await get_group_name(group_id)
-                        if group_name:
-                            roblox_groups.append(f"{group_name} ({group_id})")
-                    guild_data["roblox_groups"] = ", ".join(roblox_groups)
-                else:
-                    guild_data["roblox_groups"] = "None"
-
-                if guild_data.get("roblox_games") and len(guild_data["roblox_games"]) > 0:
-                    guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in guild_data["roblox_games"])
-                else:
-                    guild_data["roblox_games"] = "None"
-
-                if guild_data.get("bot_manager"):
-                    bot_manager_id = guild_data["bot_manager"]
-                    if bot_manager_id:
-                        bot_manager = context.guild.get_role(bot_manager_id)
-                        if bot_manager:
-                            guild_data["bot_manager"] = bot_manager.mention
-
-                if guild_data.get("giveaway_manager"):
-                    giveaway_manager_id = guild_data["giveaway_manager"]
-                    if giveaway_manager_id:
-                        giveaway_manager = context.guild.get_role(giveaway_manager_id)
-                        if giveaway_manager:
-                            guild_data["giveaway_manager"] = giveaway_manager.mention
-
+                # get input
                 await response.edit(embed = create_embed({
                     "title": f"Guild Settings",
                     "description": f"Press the {CHANGE_EMOJI} to change settings",
                     "inline": True,
                 }, guild_data))
 
-                # Changing settings
-
-                def check_response(reaction, user):
-                    return user == context.author and reaction.message == response and str(reaction.emoji) == CHANGE_EMOJI
-
-                try:
-                    await response.add_reaction(CHANGE_EMOJI)
-                    reaction, user = await self.client.wait_for("reaction_add", check = check_response, timeout = 60)
-                except asyncio.TimeoutError:
+                await response.add_reaction(CHANGE_EMOJI)
+                reaction, user = await wait_for_reaction(self.client, context, CHANGE_EMOJI, 30)
+                if not reaction:
                     await response.edit(embed = create_embed({
                         "title": f"Guild Settings",
                         "inline": True,
@@ -228,11 +701,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await response.clear_reaction(CHANGE_EMOJI)
                     return
                     
-                # get setting to change
-
-                def check_message_response(message):
-                    return user == context.author and message.channel == response.channel
-
+                # get setting
                 await response.clear_reaction(CHANGE_EMOJI)
                 await response.edit(embed = create_embed({
                     "title": "Please type the setting you would like to change",
@@ -240,12 +709,8 @@ class default(commands.Cog, description = "Default commands and commands for set
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                name = None
-                try:
-                    message = await self.client.wait_for("message", check = check_message_response, timeout = 60)
-                    await message.delete()
-                    name = message.content
-                except asyncio.TimeoutError:
+                message = await wait_for_message(self.client, context, 30)
+                if not message:
                     await response.edit(embed = create_embed({
                         "title": f"You did not enter a setting to change",
                         "inline": True,
@@ -254,19 +719,9 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await asyncio.sleep(WAIT_DELAY)
                     continue
 
-                if not name:
-                    await response.edit(embed = create_embed({
-                        "title": f"You did not enter a setting to change",
-                        "inline": True,
-                        "color": discord.Color.red()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-
-                name = name.lower()
-                settings_list = list(DEFAULT_GUILD_DATA.keys())
-                settings_list.remove("guild_id")
-                if not name in settings_list:
+                await message.delete()
+                name = message.content.lower()
+                if not name in guild_data.keys():
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
                         "inline": True,
@@ -275,610 +730,38 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await asyncio.sleep(WAIT_DELAY)
                     continue
 
-                # get value to change setting to
-
+                # get value
                 await response.edit(embed = create_embed({
                     "title": f"Please type the value you would like to change {name} to",
                     "inline": True,
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                value = None
-                try:
-                    message = await self.client.wait_for("message", check = check_message_response, timeout = 60)
-                    await message.delete()
-                    value = message.content
-                except asyncio.TimeoutError:
+                message = await wait_for_message(self.client, context, 30)
+                if not message:
                     await response.edit(embed = create_embed({
-                        "title": f"You did not enter a value to change {name} to",
+                        "title": f"You did not enter a setting to change",
                         "inline": True,
                         "color": discord.Color.red()
                     }, guild_data))
                     await asyncio.sleep(WAIT_DELAY)
                     continue
 
-                # changing settings
+                value = message.content
+                await message.delete()
 
-                if name == "prefix":
-                    value = value.lower()
-
-                    if len(value) > 1:
-                        await response.edit(embed = create_embed({
-                            "title": "Prefix must be one letter",
-                            "inline": True,
-                            "color": discord.Color.red()
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if is_number(value):
-                        await response.edit(embed = create_embed({
-                            "title": "Prefix must be a letter",
-                            "inline": True,
-                            "color": discord.Color.red()
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    guild_data["prefix"] = value
-                    new_guild_data["prefix"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed prefix to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
+                # change settings
+                if name in dir(change_settings):
+                    new_guild_data = await getattr(change_settings(), name)(context, response, guild_data, value)
+                    if new_guild_data:
+                        guild_data = new_guild_data
                     await asyncio.sleep(WAIT_DELAY)
-                elif name == "message_cooldown":
-                    seconds = parse_to_timestamp(value)
-                    if not seconds:
-                        await response.edit(embed = create_embed({
-                            "title": "Could not parse {value}",
-                            "inline": True,
-                            "color": discord.Color.red(),
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["message_cooldown"] = seconds
-                    guild_data["message_cooldown"] = seconds
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed message cooldown to {value} ({seconds} seconds)",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "daily_reward":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The daily reward ({value}) must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if value < 0:
-                        await response.edit(embed = create_embed({
-                            "title": f"The daily reward ({value}) must be greater than or equal to 0",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["daily_reward"] = value
-                    guild_data["daily_reward"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed daily reward to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "point_channels":
-                    channel = get_object(context.guild.text_channels, value)
-                    if not channel:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find text channel {channel or value}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    if channel.id in new_guild_data["point_channels"]:
-                        new_guild_data["point_channels"].remove(channel.id)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("point_channels") and len(new_guild_data["point_channels"]) > 0:
-                            point_channels = []
-                            for point_channel_id in new_guild_data["point_channels"]:
-                                point_channel = context.guild.get_channel(point_channel_id)
-                                if point_channel:
-                                    point_channels.append(point_channel.mention)
-                            guild_data["point_channels"] = ", ".join(point_channels)
-                        else:
-                            guild_data["point_channels"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed text channel {channel} from point channels",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                    else:
-                        new_guild_data["point_channels"].append(channel.id)
-                        guild_data["point_channels"] += f", {channel.mention}"
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("point_channels") and len(new_guild_data["point_channels"]) > 0:
-                            point_channels = []
-                            for point_channel_id in new_guild_data["point_channels"]:
-                                point_channel = context.guild.get_channel(point_channel_id)
-                                if point_channel:
-                                    point_channels.append(point_channel.mention)
-                            guild_data["point_channels"] = ", ".join(point_channels)
-                        else:
-                            guild_data["point_channels"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Added text channel {channel} to point channels",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                elif name == "points_per_message":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The points per message ({value}) must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if value < 0:
-                        await response.edit(embed = create_embed({
-                            "title": f"The points per message ({value}) must be greater than or equal to 0",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["points_per_message"] = value
-                    guild_data["points_per_message"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed points per message to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "qotd_channel":
-                    if value.lower() == "none":
-                        new_guild_data = get_guild_data(context.guild.id)
-                        new_guild_data["qotd_channel"] = None
-                        guild_data["qotd_channel"] = None
-                        save_guild_data(new_guild_data)
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed QOTD channel",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    channel = get_object(context.guild.text_channels, value)
-                    if not channel:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find text channel {channel or value}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["qotd_channel"] = channel.id
-                    guild_data["qotd_channel"] = channel.mention
-                    save_guild_data(new_guild_data)
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed QOTD channel to {channel}",
-                        "color": discord.Color.green(),
-                        "inline": True,
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "aotd_keywords":
-                    value = value.lower()
-                    new_guild_data = get_guild_data(context.guild.id)
-                    if value in new_guild_data["aotd_keywords"]:
-                        new_guild_data["aotd_keywords"].remove(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("aotd_keywords") and len(new_guild_data["aotd_keywords"]) > 0:
-                            aotd_keywords = []
-                            for keyword in new_guild_data["aotd_keywords"]:
-                                aotd_keywords.append(keyword)
-                            guild_data["aotd_keywords"] = ", ".join(aotd_keywords)
-                        else:
-                            guild_data["aotd_keywords"] = "None"
-
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed {value} as an AOTD keywords",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                    else:
-                        new_guild_data["aotd_keywords"].append(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("aotd_keywords") and len(new_guild_data["aotd_keywords"]) > 0:
-                            aotd_keywords = []
-                            for keyword in new_guild_data["aotd_keywords"]:
-                                aotd_keywords.append(keyword)
-                            guild_data["aotd_keywords"] = ", ".join(aotd_keywords)
-                        else:
-                            guild_data["aotd_keywords"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Added {value} as an AOTD keywords",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                elif name == "points_per_aotd":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The points per AOTD ({value}) must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if value < 0:
-                        await response.edit(embed = create_embed({
-                            "title": f"The points per AOTD ({value}) must be greater than or equal to 0",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["points_per_aotd"] = value
-                    guild_data["points_per_aotd"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed points per AOTD to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "giveaway_channel":
-                    if value.lower() == "none":
-                        new_guild_data = get_guild_data(context.guild.id)
-                        new_guild_data["giveaway_channel"] = None
-                        guild_data["giveaway_channel"] = None
-                        save_guild_data(new_guild_data)
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed giveaway channel",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    channel = get_object(context.guild.text_channels, value)
-                    if not channel:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find text channel {channel or value}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["giveaway_channel"] = channel.id
-                    guild_data["giveaway_channel"] = channel.mention
-                    save_guild_data(new_guild_data)
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed giveaway channel to {channel}",
-                        "color": discord.Color.green(),
-                        "inline": True,
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "roblox_groups":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The roblox group ID {value} must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    group_name = await get_group_name(value)
-                    if not group_name:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find roblox group with ID {value}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    if value in new_guild_data["roblox_groups"]:
-                        new_guild_data["roblox_groups"].remove(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
-                            roblox_groups = []
-                            for group_id in new_guild_data["roblox_groups"]:
-                                group_name = await get_group_name(group_id)
-                                if group_name:
-                                    roblox_groups.append(f"{group_name} ({group_id})")
-                            guild_data["roblox_groups"] = ", ".join(roblox_groups)
-                        else:
-                            guild_data["roblox_groups"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed {group_name} ({value}) as a roblox group",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                    else:
-                        new_guild_data["roblox_groups"].append(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("roblox_groups") and len(new_guild_data["roblox_groups"]) > 0:
-                            roblox_groups = []
-                            for group_id in new_guild_data["roblox_groups"]:
-                                group_name = await get_group_name(group_id)
-                                if group_name:
-                                    roblox_groups.append(f"{group_name} ({group_id})")
-                            guild_data["roblox_groups"] = ", ".join(roblox_groups)
-                        else:
-                            guild_data["roblox_groups"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Added {group_name} ({value}) as a roblox group",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                elif name == "roblox_games":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The roblox game ID {value} must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    if value in new_guild_data["roblox_games"]:
-                        new_guild_data["roblox_games"].remove(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
-                            guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
-                        else:
-                            guild_data["roblox_games"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed game with id {value} as a roblox game",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                    else:
-                        new_guild_data["roblox_games"].append(value)
-                        save_guild_data(new_guild_data)
-
-                        if new_guild_data.get("roblox_games") and len(new_guild_data["roblox_games"]) > 0:
-                            guild_data["roblox_games"] = ", ".join(str(game_id) for game_id in new_guild_data["roblox_games"])
-                        else:
-                            guild_data["roblox_games"] = "None"
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Added game with id {value} as a roblox game",
-                            "color": discord.Color.green(),
-                            "inline": True,
-                        }, guild_data))
-
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-                elif name == "group_award":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The group award ({value}) must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if value < 0:
-                        await response.edit(embed = create_embed({
-                            "title": f"The group award ({value}) must be greater than or equal to 0",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["group_award"] = value
-                    guild_data["group_award"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed group award to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "game_award":
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        await response.edit(embed = create_embed({
-                            "title": f"The game award ({value}) must be a number",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    if value < 0:
-                        await response.edit(embed = create_embed({
-                            "title": f"The game award ({value}) must be greater than or equal to 0",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["game_award"] = value
-                    guild_data["game_award"] = value
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed game award to {value}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "bot_manager":
-                    if value.lower() == "none":
-                        new_guild_data = get_guild_data(context.guild.id)
-                        new_guild_data["bot_manager"] = None
-                        guild_data["bot_manager"] = None
-                        save_guild_data(new_guild_data)
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed bot manager role",
-                            "inline": True,
-                            "color": discord.Color.green()
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    role = get_object(context.guild.roles, value)
-                    if not role:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find role {role}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["bot_manager"] = role.id
-                    guild_data["bot_manager"] = role.mention
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed bot manager role to {role}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
-                elif name == "giveaway_manager":
-                    if value.lower() == "none":
-                        new_guild_data = get_guild_data(context.guild.id)
-                        new_guild_data["giveaway_manager"] = None
-                        guild_data["giveaway_manager"] = None
-                        save_guild_data(new_guild_data)
-
-                        await response.edit(embed = create_embed({
-                            "title": f"Removed giveaway manager role",
-                            "inline": True,
-                            "color": discord.Color.green()
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    role = get_object(context.guild.roles, value)
-                    if not role:
-                        await response.edit(embed = create_embed({
-                            "title": f"Could not find role {role}",
-                            "color": discord.Color.red(),
-                            "inline": True,
-                        }, guild_data))
-                        await asyncio.sleep(WAIT_DELAY)
-                        continue
-
-                    new_guild_data = get_guild_data(context.guild.id)
-                    new_guild_data["giveaway_manager"] = role.id
-                    guild_data["giveaway_manager"] = role.mention
-                    save_guild_data(new_guild_data)
-
-                    await response.edit(embed = create_embed({
-                        "title": f"Changed bot manager role to {role}",
-                        "inline": True,
-                        "color": discord.Color.green()
-                    }, guild_data))
-                    await asyncio.sleep(WAIT_DELAY)
-                    continue
                 else:
                     await response.edit(embed = create_embed({
                         "title": f"{name} is an invalid setting",
                         "color": discord.Color.red()
                     }))
                     await asyncio.sleep(WAIT_DELAY)
-                    continue
         except Exception as error_message:
             traceback.print_exc()
             await response.edit(embed = create_embed({

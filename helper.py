@@ -1,10 +1,10 @@
 from pymongo import MongoClient
 import discord
-import json
 import os
 import math
 from dotenv import load_dotenv
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, IS_TESTING, LIVE_DATABASE, TESTING_DATABASE
+import asyncio
 
 load_dotenv('.vscode/.env')
 
@@ -221,3 +221,27 @@ def get_first_n_items(dictionary, number):
     for index in list(dictionary)[:number]:
         new_dictionary[index] = dictionary.get(index)
     return new_dictionary
+
+async def wait_for_reaction(client, context, emoji=None, timeout=30):
+    def check_response(reaction, user):
+        if user == context.author and reaction.message.channel == context.channel:
+            if emoji:
+                return type(emoji) == list and reaction.emoji in emoji or reaction.emoji == emoji
+            else:
+                return True
+
+    try:
+        reaction, user = await client.wait_for("reaction_add", check=check_response, timeout=timeout)
+        return reaction, user
+    except asyncio.TimeoutError:
+        return None, None
+
+async def wait_for_message(client, context, timeout=30):
+    def check_message(message):
+        return message.author == context.author
+
+    try:
+        message = await client.wait_for("message", check=check_message, timeout=timeout)
+        return message
+    except asyncio.TimeoutError:
+        return None

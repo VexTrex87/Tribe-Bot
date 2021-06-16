@@ -4,7 +4,7 @@ import aiohttp
 import random
 import asyncio
 
-from helper import create_embed, get_user_data, save_user_data, get_all_guild_data, get_all_user_data
+from helper import create_embed, get_user_data, save_user_data, get_all_guild_data, get_all_user_data, wait_for_message, wait_for_reaction
 from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY, CHANGE_EMOJI
 
 async def get_group_name(group_id: int):
@@ -80,26 +80,6 @@ class roblox(commands.Cog):
     def cog_load(self):
         self.check_groups.start()
         self.check_games.start()
-
-    async def wait_for_reaction(self, context, emoji, timeout=30):
-        def check_response(reaction, user):
-            return user == context.author and str(reaction.emoji) == emoji and reaction.message.channel == context.channel
-
-        try:
-            reaction, user = await self.client.wait_for("reaction_add", check=check_response, timeout=timeout)
-            return reaction, user
-        except asyncio.TimeoutError:
-            return None
-
-    async def wait_for_message(self, context, timeout=30):
-        def check_message(message):
-            return message.author == context.author
-
-        try:
-            message = await self.client.wait_for("message", check=check_message, timeout=timeout)
-            return message
-        except asyncio.TimeoutError:
-            return None
 
     @tasks.loop(seconds = GROUPS_UPDATE_DELAY)
     async def check_groups(self):
@@ -235,7 +215,7 @@ class roblox(commands.Cog):
             }))
 
             # change roblox account
-            reaction, user = await self.wait_for_reaction(context, CHANGE_EMOJI)
+            reaction, user = await self.wait_for_reaction(self.client, context, CHANGE_EMOJI)
             if not reaction:
                 await response.edit(embed = create_embed({
                     "title": roblox_account_username and f"Your your roblox account is {roblox_account_username}" or "You do not have a linked roblox account",
@@ -255,7 +235,7 @@ class roblox(commands.Cog):
                     "color": discord.Color.gold()
                 }))
 
-            message = await self.wait_for_message(context)
+            message = await wait_for_message(self.client, context)
             if not message:
                 await response.edit(embed = create_embed({
                     "title": "No response sent",
@@ -285,7 +265,7 @@ class roblox(commands.Cog):
                 "Text": verification_message
             }))
 
-            reaction, user = await self.wait_for_reaction(context, ACCEPT_EMOJI, timeout=300)
+            reaction, user = await wait_for_reaction(self.client, context, ACCEPT_EMOJI, timeout=300)
             if not reaction:
                 await response.edit(embed = create_embed({
                     "title": "No response sent",
