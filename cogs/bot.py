@@ -3,7 +3,7 @@ from discord.ext import commands
 import os
 import sys
 import asyncio
-from helper import create_embed, check_if_bot_manager
+from helper import create_embed, check_if_bot_manager, wait_for_reaction
 from constants import ACCEPT_EMOJI
 
 class bot(commands.Cog, description = "Commands for managing the bot."):
@@ -67,25 +67,29 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
             "color": discord.Color.gold()
         }))
         
-        def check_response(reaction, user):
-            return not user.bot and user == context.author and str(reaction.emoji) == ACCEPT_EMOJI and reaction.message == response
-
         try:
             await response.add_reaction(ACCEPT_EMOJI)
-            await self.client.wait_for("reaction_add", check = check_response, timeout = 30)
-        except asyncio.TimeoutError:
-            await response.edit(embed = create_embed({
-                "title": f"You did not respond in time",
-                "color": discord.Color.red()
-            }))
-            return
-        else:
+            reaction, user = await wait_for_reaction(self.client, context, ACCEPT_EMOJI)
+            if not reaction:
+                await response.edit(embed=create_embed({
+                    "title": "Restart canceled",
+                    "color": discord.Color.red()
+                }))
+                return
+
             await response.edit(embed = create_embed({
                 "title": "Restarting bot...",
                 "color": discord.Color.green()
             }))
 
             sys.exit()
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                "title": "Could not restart bot",
+                "color": discord.Color.red()
+            }, {
+                "Error Message": error_message
+            }))
 
 def setup(client):
     client.add_cog(bot(client))
