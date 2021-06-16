@@ -66,7 +66,7 @@ COMMANDS = {
     }
 }
 
-IS_TESTING = False
+IS_TESTING = True
 DEFAULT_ACTIVITY = "?help"
 LIVE_DATABASE = "database1"
 TESTING_DATABASE = "database2"

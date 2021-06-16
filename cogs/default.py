@@ -527,7 +527,10 @@ class default(commands.Cog, description = "Default commands and commands for set
  
     async def wait_for_reaction(self, context, emoji, timeout=30):
         def check_response(reaction, user):
-            return user == context.author and str(reaction.emoji) == emoji and reaction.message.channel == context.channel
+            if user == context.author:
+                if type(emoji) == list and reaction.emoji in emoji or reaction.emoji == emoji:
+                    if reaction.message.channel == context.channel:
+                        return True
 
         try:
             reaction, user = await self.client.wait_for("reaction_add", check=check_response, timeout=timeout)
@@ -624,15 +627,11 @@ class default(commands.Cog, description = "Default commands and commands for set
             await response.edit(embed = pages[current_page])
 
             while True:
-                def check_response(reaction, user):
-                    return user == context.author and reaction.message == response
-
                 try:
                     await response.add_reaction(BACK_EMOJI)
                     await response.add_reaction(NEXT_EMOJI)
 
-                    reaction, user = await self.client.wait_for("reaction_add", check = check_response, timeout = 60)
-
+                    reaction, user = await self.wait_for_reaction(context, [BACK_EMOJI, NEXT_EMOJI], timeout=60)
                     if str(reaction.emoji) == NEXT_EMOJI:
                         if current_page + 1 >= len(pages):
                             current_page = len(pages) - 1
