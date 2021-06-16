@@ -222,12 +222,13 @@ def get_first_n_items(dictionary, number):
         new_dictionary[index] = dictionary.get(index)
     return new_dictionary
 
-async def wait_for_reaction(client, context, emoji, timeout=30):
+async def wait_for_reaction(client, context, emoji=None, timeout=30):
     def check_response(reaction, user):
-        if user == context.author:
-            if type(emoji) == list and reaction.emoji in emoji or reaction.emoji == emoji:
-                if reaction.message.channel == context.channel:
-                    return True
+        if user == context.author and reaction.message.channel == context.channel:
+            if emoji:
+                return type(emoji) == list and reaction.emoji in emoji or reaction.emoji == emoji
+            else:
+                return True
 
     try:
         reaction, user = await client.wait_for("reaction_add", check=check_response, timeout=timeout)
