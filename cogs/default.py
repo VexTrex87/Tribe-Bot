@@ -716,7 +716,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                 }, guild_data))
 
                 await response.add_reaction(CHANGE_EMOJI)
-                reaction, user = await self.wait_for_reaction(context, CHANGE_EMOJI, 60)
+                reaction, user = await self.wait_for_reaction(context, CHANGE_EMOJI, 30)
                 if not reaction:
                     await response.edit(embed = create_embed({
                         "title": f"Guild Settings",
@@ -733,7 +733,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                message = await self.wait_for_message(context, 60)
+                message = await self.wait_for_message(context, 30)
                 if not message:
                     await response.edit(embed = create_embed({
                         "title": f"You did not enter a setting to change",
@@ -761,7 +761,7 @@ class default(commands.Cog, description = "Default commands and commands for set
                     "color": discord.Color.gold()
                 }, guild_data))
 
-                message = await self.wait_for_message(context, 60)
+                message = await self.wait_for_message(context, 30)
                 if not message:
                     await response.edit(embed = create_embed({
                         "title": f"You did not enter a setting to change",
