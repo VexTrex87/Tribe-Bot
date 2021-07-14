@@ -136,7 +136,7 @@ ROBLOX_KEYWORDS = [
     "yogurt",
 ]
 
-IS_TESTING = True
+IS_TESTING = False
 DEFAULT_ACTIVITY = "?help"
 LIVE_DATABASE = "database1"
 TESTING_DATABASE = "database2"
