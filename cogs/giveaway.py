@@ -376,7 +376,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
             create_giveaway(giveaway)
 
             await response.edit(embed = create_embed({
-                "title": "Giveaway announced in #{giveaway_channel.name}",
+                "title": f"Giveaway announced in #{giveaway_channel.name}",
                 "color": discord.Color.gold()
             }, {
                 "Title": giveaway["title"],

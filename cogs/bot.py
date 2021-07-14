@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import os
 import sys
-import asyncio
 from helper import create_embed, check_if_bot_manager, wait_for_reaction
 from constants import ACCEPT_EMOJI
 
@@ -48,7 +47,7 @@ class bot(commands.Cog, description = "Commands for managing the bot."):
         try:
             os.system("cls" if os.name == "nt" else "clear")
             await response.edit(embed = create_embed({
-                "title": f"Terminal cleared",
+                "title": f"Cleared terminal",
                 "color": discord.Color.green()
             }))
         except Exception as error_message:

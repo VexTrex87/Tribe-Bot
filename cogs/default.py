@@ -609,7 +609,9 @@ class default(commands.Cog, description = "Default commands and commands for set
                     await response.add_reaction(NEXT_EMOJI)
 
                     reaction, user = await wait_for_reaction(self.client, context, [BACK_EMOJI, NEXT_EMOJI], timeout=60)
-                    if str(reaction.emoji) == NEXT_EMOJI:
+                    if not reaction:
+                        return
+                    elif str(reaction.emoji) == NEXT_EMOJI:
                         if current_page + 1 >= len(pages):
                             current_page = len(pages) - 1
                         else:

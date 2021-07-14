@@ -66,21 +66,6 @@ COMMANDS = {
     }
 }
 
-IS_TESTING = False
-DEFAULT_ACTIVITY = "?help"
-LIVE_DATABASE = "database1"
-TESTING_DATABASE = "database2"
-
-MAX_LEADERBOARD_FIELDS = 10
-CLIENT_ID = 834455533423427584
-ACCEPT_EMOJI = "✅"
-NEXT_EMOJI = "▶️"
-BACK_EMOJI = "◀️"
-CHANGE_EMOJI = "⚙️"
-WAIT_DELAY = 3
-DECLINE_EMOJI = "❌"
-
-GIVEAWAY_UPDATE_DELAY = 10
 EIGHTBALL_RESPONSES = [
     "It is certain.",
     "It is decidedly so.",
@@ -107,15 +92,6 @@ EIGHTBALL_RESPONSES = [
     "Ask better questions next time.",
 ]
 
-GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
-USER_GROUPS_URL = "https://groups.roblox.com/v2/users/USER_ID/groups/roles"
-USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
-USER_STATUS_URL = "https://users.roblox.com/v1/users/USER_ID/status"
-USERS_URL = "https://users.roblox.com/v1/usernames/users"
-GROUPS_UPDATE_DELAY = 60
-GAMES_UPDATE_DELAY = 15
-REQUESTS_CHANNEL = 834455396667359242
-ROBLOX_KEYWORD_COUNT = 5
 ROBLOX_KEYWORDS = [
     "apple",
     "avocado",
@@ -159,3 +135,29 @@ ROBLOX_KEYWORDS = [
     "water",
     "yogurt",
 ]
+
+IS_TESTING = True
+DEFAULT_ACTIVITY = "?help"
+LIVE_DATABASE = "database1"
+TESTING_DATABASE = "database2"
+CLIENT_ID = 834455533423427584
+
+ACCEPT_EMOJI = "✅"
+NEXT_EMOJI = "▶️"
+BACK_EMOJI = "◀️"
+CHANGE_EMOJI = "⚙️"
+DECLINE_EMOJI = "❌"
+
+GROUP_INFO_URL = "https://groups.roblox.com/v1/groups/GROUP_ID"
+USER_GROUPS_URL = "https://groups.roblox.com/v2/users/USER_ID/groups/roles"
+USER_INFO_URL = "https://users.roblox.com/v1/users/USER_ID"
+USER_STATUS_URL = "https://users.roblox.com/v1/users/USER_ID/status"
+USERS_URL = "https://users.roblox.com/v1/usernames/users"
+
+MAX_LEADERBOARD_FIELDS = 10
+WAIT_DELAY = 3
+GIVEAWAY_UPDATE_DELAY = 10
+GROUPS_UPDATE_DELAY = 60
+GAMES_UPDATE_DELAY = 15
+REQUESTS_CHANNEL = 834455396667359242
+ROBLOX_KEYWORD_COUNT = 5

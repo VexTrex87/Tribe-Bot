@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-from dotenv import load_dotenv
+import dotenv
 from constants import IS_TESTING, EXTENSIONS, DEFAULT_GUILD_DATA
 from helper import create_embed, get_guild_data
 
@@ -12,8 +12,7 @@ async def get_prefix(client, context):
     guild_data = get_guild_data(context.guild.id)
     return guild_data["prefix"]
 
-load_dotenv('.vscode/.env')
-
+dotenv.load_dotenv('.env')
 TOKEN = os.getenv("TOKEN")
 TEST_TOKEN = os.getenv("TEST_TOKEN")
 

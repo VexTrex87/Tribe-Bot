@@ -2,13 +2,13 @@ from pymongo import MongoClient
 import discord
 import os
 import math
-from dotenv import load_dotenv
+import dotenv
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, IS_TESTING, LIVE_DATABASE, TESTING_DATABASE
 import asyncio
 
-load_dotenv('.vscode/.env')
-
+dotenv.load_dotenv('.env')
 MONGO_TOKEN = os.getenv("DB_TOKEN")
+
 cluster = MongoClient(MONGO_TOKEN)
 database_name = IS_TESTING and TESTING_DATABASE or LIVE_DATABASE
 guild_datastore = cluster[database_name]["guild"]
@@ -26,18 +26,13 @@ def attach_default_guild_data(guild_data):
 
 def get_guild_data(guild_id: int):
     guild_data = guild_datastore.find_one({"guild_id": guild_id}) 
-    data_is_new = False
-
-    if not guild_data:
-        data_is_new = True
+    if guild_data:
+        guild_data = attach_default_guild_data(guild_data)
+    else:
         guild_data = DEFAULT_GUILD_DATA.copy()
         guild_data["guild_id"] = guild_id
-
-    guild_data = attach_default_guild_data(guild_data)
-
-    if data_is_new:
+        guild_data = attach_default_guild_data(guild_data)
         guild_datastore.insert_one(guild_data)
-
     return guild_data
 
 def save_guild_data(guild_data):
@@ -64,16 +59,12 @@ def attach_default_user_data(user_data):
 
 def get_user_data(user_id: int):
     user_data = user_datastore.find_one({"user_id": user_id}) 
-    data_is_new = False
-
-    if not user_data:
-        data_is_new = True
+    if user_data:
+        user_data = attach_default_user_data(user_data)
+    else:
         user_data = DEFAULT_USER_DATA.copy()
         user_data["user_id"] = user_id
-
-    user_data = attach_default_user_data(user_data)
-
-    if data_is_new:
+        user_data = attach_default_user_data(user_data)
         user_datastore.insert_one(user_data)
 
     return user_data
@@ -154,9 +145,6 @@ def create_embed(info: dict = {}, fields: dict = {}):
         embed.set_thumbnail(url = info.get("thumbnail"))
     
     return embed
-
-def list_to_string(list: list):
-    return ", ".join(list)
 
 def format_time(timestamp):
     hours = math.floor(timestamp / 60 / 60)
