@@ -163,7 +163,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                     prize = giveaway_info["reward"]
                     endsin_time_text = ctime(giveaway_info["endsin"])
 
-                    creator = await guild.fetch_member(giveaway_info["creator"])
+                    creator = guild.get_member(giveaway_info["creator"])
                     creator = creator and creator.mention or "Unknown"
 
                     if len(giveaway_info["member_pool"]) == 0:
@@ -182,7 +182,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                         winner_id = None
                         while True:
                             winner_id = random.choice(giveaway_info["member_pool"])
-                            winner = await guild.fetch_member(winner_id)
+                            winner = guild.get_member(winner_id)
                             if winner:
                                 break
 
@@ -216,7 +216,7 @@ class giveaway(commands.Cog, description = "Commands for managing and entering g
                             if loser_id == winner_id:
                                 continue
 
-                            loser = await guild.fetch_member(loser_id)
+                            loser = guild.get_member(loser_id)
                             if loser:
                                 try:
                                     await loser.send(embed = create_embed({
