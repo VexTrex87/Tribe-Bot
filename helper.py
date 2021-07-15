@@ -7,17 +7,19 @@ import sys
 from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, DEBUG_DATABASE, PRODUCTION_DATABASE
 import asyncio
 
+def get_database_name():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == '-d':
+            return DEBUG_DATABASE
+        elif sys.argv[1] == '-p':
+            return PRODUCTION_DATABASE
+
+database_name = get_database_name()
+if not database_name:
+    sys.exit()
+
 dotenv.load_dotenv('.env')
 MONGO_TOKEN = os.getenv("DB_TOKEN")
-
-database_name = None
-if len(sys.argv) > 1 and sys.argv[1] == '-d':
-    database_name = DEBUG_DATABASE
-    print('Using debug database')
-else:
-    database_name = PRODUCTION_DATABASE
-    print('Using production database')
-
 cluster = MongoClient(MONGO_TOKEN)
 guild_datastore = cluster[database_name]["guild"]
 user_datastore = cluster[database_name]["user"]
@@ -144,7 +146,8 @@ def create_embed(info: dict = {}, fields: dict = {}):
         embed.add_field(name = name, value = value, inline = info.get("inline") or False)
 
     if info.get("author"):
-        embed.set_author(name = info.author.name, url = info.author.mention, icon_url = info.author.avatar_url)
+        author = info.get('author')
+        embed.set_author(name = author.name, url = '', icon_url = author.avatar_url)
     if info.get("footer"):
         embed.set_footer(text = info.footer)
     if info.get("image"):

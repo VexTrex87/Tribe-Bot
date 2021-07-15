@@ -1,8 +1,22 @@
-import discord
-from discord.ext import commands
+import sys
 import os
 import dotenv
-import sys
+
+TOKEN = None
+dotenv.load_dotenv('.env')
+if len(sys.argv) > 1:
+    if sys.argv[1] == '-d':
+        print('Running in debug mode')
+        TOKEN = os.getenv("DEBUG_TOKEN")
+    elif sys.argv[1] == '-p':
+        print('Running in production mode')
+        TOKEN = os.getenv("PRODUCTION_TOKEN")
+if not TOKEN:
+    print('No run mode specified')
+    sys.exit()
+
+import discord
+from discord.ext import commands
 from constants import EXTENSIONS, DEFAULT_GUILD_DATA
 from helper import create_embed, get_guild_data
 
@@ -12,16 +26,6 @@ async def get_prefix(client, context):
 
     guild_data = get_guild_data(context.guild.id)
     return guild_data["prefix"]
-
-dotenv.load_dotenv('.env')
-
-TOKEN = None
-if len(sys.argv) > 1 and sys.argv[1] == '-d':
-    TOKEN = os.getenv("DEBUG_TOKEN")
-    print('Running in debug mode')
-else:
-    TOKEN = os.getenv("PRODUCTION_TOKEN")
-    print('Running in production mode')
 
 intents = discord.Intents.default()
 intents.members = True
