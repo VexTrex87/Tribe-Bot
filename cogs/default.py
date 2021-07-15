@@ -904,8 +904,6 @@ class default(commands.Cog, description = 'Default commands and commands for set
         try:
             guild_data = get_guild_data(context.guild.id)
 
-            '''
-
             suggestion_channel_id = guild_data.get('suggestion_channel')
             if not suggestion_channel_id:
                 await response.edit(embed=create_embed({
@@ -921,8 +919,6 @@ class default(commands.Cog, description = 'Default commands and commands for set
                     'color': discord.Color.red(),
                 }))
                 return
-
-            '''
 
             await response.edit(embed=create_embed({
                 'title': 'Enter a title for the suggestion',
@@ -954,7 +950,7 @@ class default(commands.Cog, description = 'Default commands and commands for set
 
             description = message.content
             await message.delete()
-            suggestion_message = await context.send(embed=create_embed({
+            suggestion_message = await suggestion_channel.send(embed=create_embed({
                 'title': title,
                 'description': description,
                 'author': context.author,
