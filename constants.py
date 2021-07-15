@@ -147,6 +147,8 @@ NEXT_EMOJI = '▶️'
 BACK_EMOJI = '◀️'
 CHANGE_EMOJI = '⚙️'
 DECLINE_EMOJI = '❌'
+THUMBS_UP = '👍'
+THUMBS_DOWN = '👎'
 
 GROUP_INFO_URL = 'https://groups.roblox.com/v1/groups/GROUP_ID'
 USER_GROUPS_URL = 'https://groups.roblox.com/v2/users/USER_ID/groups/roles'

@@ -6,7 +6,7 @@ import traceback
 import random
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -955,9 +955,11 @@ class default(commands.Cog, description = 'Default commands and commands for set
                 'description': description,
                 'author': context.author,
             }))
+            await suggestion_message.add_reaction(THUMBS_UP)
+            await suggestion_message.add_reaction(THUMBS_DOWN)
 
             await response.edit(embed=create_embed({
-                'title': 'Created suggestion',
+                'title': 'Created Suggestion',
                 'color': discord.Color.green(),
                 'url': suggestion_message.jump_url,
             }, {
