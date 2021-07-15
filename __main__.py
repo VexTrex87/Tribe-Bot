@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 import os
 import dotenv
-from constants import IS_TESTING, EXTENSIONS, DEFAULT_GUILD_DATA
+import sys
+from constants import EXTENSIONS, DEFAULT_GUILD_DATA
 from helper import create_embed, get_guild_data
 
 async def get_prefix(client, context):
@@ -13,8 +14,14 @@ async def get_prefix(client, context):
     return guild_data["prefix"]
 
 dotenv.load_dotenv('.env')
-TOKEN = os.getenv("TOKEN")
-TEST_TOKEN = os.getenv("TEST_TOKEN")
+
+TOKEN = None
+if len(sys.argv) > 1 and sys.argv[1] == '-d':
+    TOKEN = os.getenv("DEBUG_TOKEN")
+    print('Running in debug mode')
+else:
+    TOKEN = os.getenv("PRODUCTION_TOKEN")
+    print('Running in production mode')
 
 intents = discord.Intents.default()
 intents.members = True
@@ -112,4 +119,4 @@ client.remove_command("help")
 for extension in EXTENSIONS:
     client.load_extension(f"cogs.{extension}")
 
-client.run(IS_TESTING and TEST_TOKEN or TOKEN)
+client.run(TOKEN)

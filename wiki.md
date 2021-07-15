@@ -1,5 +1,6 @@
 # 2.0.0
-- Made most commandsd DMable, fixed bugs, and increased performance.
+- Added ?QOTD
+- Made most commandsd DMable.
 - Added ?messageleaderboard and ?chanegstatus.
 - Added setting for bot manager and giveaway manager.
 - Added buttons to some commands.

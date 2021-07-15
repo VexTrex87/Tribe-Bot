@@ -199,5 +199,34 @@ class points(commands.Cog, description = "Commands for managing, earning, and vi
                 "Error Message": error_message
             }))
         
+    @commands.command()
+    @commands.guild_only()
+    async def qotd(self, context, *, aotd=None):
+        if not aotd:
+            await context.send(embed=create_embed({
+                'title': 'You did not enter an answer for the QOTD',
+                'color': discord.Color.red(),
+            }))
+            return
+
+        user_data = get_user_data(context.author.id)
+        if user_data["answered_qotd"]:
+            await context.send(embed=create_embed({
+                'title': 'You already answered the QOTD',
+                'color': discord.Color.red(),
+            }))
+            return
+
+        guild_data = get_guild_data(context.guild.id)
+        points_to_give = guild_data["points_per_aotd"]
+
+        user_data["answered_qotd"] = True
+        user_data["points"] += points_to_give
+        save_user_data(user_data)
+
+        await context.send(embed = create_embed({
+            "title": f"You earned {points_to_give} points for answering the QOTD",
+        }))
+
 def setup(client):
     client.add_cog(points(client))

@@ -29,19 +29,19 @@ class events(commands.Cog, description = "Default events."):
             
     @commands.Cog.listener()
     async def on_connect(self):
-        print("connected") 
+        print("Connected") 
 
     @commands.Cog.listener()
     async def on_disconnect(self):
-        print("disconnected")  
+        print("Disconnected")  
 
     @commands.Cog.listener()
     async def on_resumed(self):
-        print("resumed")  
+        print("Resumed")  
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("ready")
+        print("Ready")
         
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -49,7 +49,6 @@ class events(commands.Cog, description = "Default events."):
             return
 
         guild_data = get_guild_data(message.guild.id)
-
         if message.content == "<@!834455533423427584>":
             await message.channel.send(embed = create_embed({
                 "title": "Prefix is `{}`. Type `{}help` for a list of commands.".format(guild_data["prefix"], guild_data["prefix"])
@@ -72,24 +71,6 @@ class events(commands.Cog, description = "Default events."):
                     if message.guild.get_member(user_data["user_id"]):
                         user_data["answered_qotd"] = False
                         save_user_data(user_data)
-
-            for aotd_keyword in guild_data["aotd_keywords"]:
-                if aotd_keyword in message.content.lower() or qotd_channel.mention in message.content.lower():
-                    if not user_data["answered_qotd"]:
-                        points_to_give = guild_data["points_per_aotd"]
-
-                        user_data["answered_qotd"] = True
-                        user_data["points"] += points_to_give
-                        save_user_data(user_data)
-
-                        try:
-                            await message.author.send(embed = create_embed({
-                                "title": f"You earned {points_to_give} points for answering the QOTD",
-                            }))
-                        except discord.Forbidden:
-                            print("Cannot DM {} that they earned {} points for answering the QOTD".format(message.author, points_to_give))
-
-                        break
 
 def setup(client):
     client.add_cog(events(client))
