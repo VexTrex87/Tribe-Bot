@@ -3,14 +3,22 @@ import discord
 import os
 import math
 import dotenv
-from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, IS_TESTING, LIVE_DATABASE, TESTING_DATABASE
+import sys
+from constants import DEFAULT_GUILD_DATA, DEFAULT_USER_DATA, DEBUG_DATABASE, PRODUCTION_DATABASE
 import asyncio
 
 dotenv.load_dotenv('.env')
 MONGO_TOKEN = os.getenv("DB_TOKEN")
 
+database_name = None
+if len(sys.argv) > 1 and sys.argv[1] == '-d':
+    database_name = DEBUG_DATABASE
+    print('Using debug database')
+else:
+    database_name = PRODUCTION_DATABASE
+    print('Using production database')
+
 cluster = MongoClient(MONGO_TOKEN)
-database_name = IS_TESTING and TESTING_DATABASE or LIVE_DATABASE
 guild_datastore = cluster[database_name]["guild"]
 user_datastore = cluster[database_name]["user"]
 giveaways_datastore = cluster[database_name]["giveaways"]
