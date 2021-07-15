@@ -859,5 +859,95 @@ class default(commands.Cog, description = "Default commands and commands for set
                 "Error Message": error_message
             }))
 
+    @commands.command()
+    @commands.guild_only()
+    async def suggest(self, context):
+        response = await context.send(embed=create_embed({
+            'title': 'Creating suggestion...',
+            'color': discord.Color.gold()
+        }))
+
+        try:
+            guild_data = get_guild_data(context.guild.id)
+
+            """
+
+            suggestion_channel_id = guild_data.get('suggestion_channel')
+            if not suggestion_channel_id:
+                await response.edit(embed=create_embed({
+                    'title': 'Server does not have a suggestion channel',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            suggestion_channel = context.guild.get_channel(suggestion_channel_id)
+            if not suggestion_channel:
+                await response.edit(embed=create_embed({
+                    'title': 'Server does not have a suggestion channel',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            """
+
+            await response.edit(embed=create_embed({
+                'title': 'Enter a title for the suggestion',
+                'color': discord.Color.gold()
+            }))
+
+            message = await wait_for_message(self.client, context, timeout=120)
+            if not message:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            title = message.content
+            await message.delete()
+            await response.edit(embed=create_embed({
+                'title': 'Enter a description for the suggestion',
+                'color': discord.Color.gold()
+            }))
+
+            message = await wait_for_message(self.client, context, timeout=300)
+            if not message:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            description = message.content
+            await message.delete()
+            suggestion_message = await context.send(embed=create_embed({
+                'title': title,
+                'description': description,
+                'author': context.author,
+            }))
+
+            await response.edit(embed=create_embed({
+                'title': 'Created suggestion',
+                'color': discord.Color.green(),
+                'url': suggestion_message.jump_url,
+            }, {
+                'title': title,
+                'description': description,
+            }))
+
+        except Exception as error_message:
+            import traceback
+            traceback.print_exc()
+
+            await response.edit(embed=create_embed({
+                'title': 'Could not create suggestion',
+                'color': discord.Color.red(),
+            }, {
+                'Error Message': error_message,
+            }))
+
+            print('Could not create suggestion')
+            print(error_message)
+
 def setup(client):
     client.add_cog(default(client))
