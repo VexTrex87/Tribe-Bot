@@ -19,11 +19,11 @@ if not database_name:
     sys.exit()
 
 dotenv.load_dotenv('.env')
-MONGO_TOKEN = os.getenv("DB_TOKEN")
+MONGO_TOKEN = os.getenv('DB_TOKEN')
 cluster = MongoClient(MONGO_TOKEN)
-guild_datastore = cluster[database_name]["guild"]
-user_datastore = cluster[database_name]["user"]
-giveaways_datastore = cluster[database_name]["giveaways"]
+guild_datastore = cluster[database_name]['guild']
+user_datastore = cluster[database_name]['user']
+giveaways_datastore = cluster[database_name]['giveaways']
 
 # guild data
 
@@ -35,18 +35,18 @@ def attach_default_guild_data(guild_data):
     return new_guild_data
 
 def get_guild_data(guild_id: int):
-    guild_data = guild_datastore.find_one({"guild_id": guild_id}) 
+    guild_data = guild_datastore.find_one({'guild_id': guild_id}) 
     if guild_data:
         guild_data = attach_default_guild_data(guild_data)
     else:
         guild_data = DEFAULT_GUILD_DATA.copy()
-        guild_data["guild_id"] = guild_id
+        guild_data['guild_id'] = guild_id
         guild_data = attach_default_guild_data(guild_data)
         guild_datastore.insert_one(guild_data)
     return guild_data
 
 def save_guild_data(guild_data):
-    guild_datastore.update_one({"guild_id": guild_data["guild_id"]}, {"$set": guild_data})
+    guild_datastore.update_one({'guild_id': guild_data['guild_id']}, {'$set': guild_data})
 
 def get_all_guild_data(sort_value: str = None):
     all_cursor_data = sort_value and guild_datastore.find().sort(sort_value, -1) or guild_datastore.find({})
@@ -68,19 +68,19 @@ def attach_default_user_data(user_data):
     return new_user_data
 
 def get_user_data(user_id: int):
-    user_data = user_datastore.find_one({"user_id": user_id}) 
+    user_data = user_datastore.find_one({'user_id': user_id}) 
     if user_data:
         user_data = attach_default_user_data(user_data)
     else:
         user_data = DEFAULT_USER_DATA.copy()
-        user_data["user_id"] = user_id
+        user_data['user_id'] = user_id
         user_data = attach_default_user_data(user_data)
         user_datastore.insert_one(user_data)
 
     return user_data
 
 def save_user_data(user_data):
-    user_datastore.update_one({"user_id": user_data["user_id"]}, {"$set": user_data})
+    user_datastore.update_one({'user_id': user_data['user_id']}, {'$set': user_data})
 
 def get_all_user_data(sort_value: str = None):
     all_cursor_data = sort_value and user_datastore.find().sort(sort_value, -1) or user_datastore.find({})
@@ -95,10 +95,10 @@ def get_all_user_data(sort_value: str = None):
 # giveaways data
 
 def get_giveaway(message_id: int):
-    return giveaways_datastore.find_one({"message_id": message_id}) 
+    return giveaways_datastore.find_one({'message_id': message_id}) 
 
 def save_giveaway(giveaway_data):
-    giveaways_datastore.update_one({"message_id": giveaway_data["message_id"]}, {"$set": giveaway_data})
+    giveaways_datastore.update_one({'message_id': giveaway_data['message_id']}, {'$set': giveaway_data})
 
 def create_giveaway(giveaway_data):
     giveaways_datastore.insert_one(giveaway_data)
@@ -107,7 +107,7 @@ def get_all_giveaways():
     return giveaways_datastore.find({})
 
 def delete_giveaway(message_id: int):
-    giveaways_datastore.delete_one({"message_id": message_id})
+    giveaways_datastore.delete_one({'message_id': message_id})
 
 # other
 
@@ -123,37 +123,37 @@ def parse_to_timestamp(time):
     prefix = int(time[:-1])
     suffix = time[-1:]
 
-    if suffix == "s":
+    if suffix == 's':
         return prefix
-    elif suffix == "m":
+    elif suffix == 'm':
         return prefix * 60
-    elif suffix == "h":
+    elif suffix == 'h':
         return prefix * 60 * 60
-    elif suffix == "d":
+    elif suffix == 'd':
         return prefix * 60 * 60 * 24
     else:
         return int(time)
 
 def create_embed(info: dict = {}, fields: dict = {}):
     embed = discord.Embed(
-        title = info.get("title") or "",
-        description = info.get("description") or "",
-        colour = info.get("color") or discord.Color.blue(),
-        url = info.get("url") or "",
+        title = info.get('title') or '',
+        description = info.get('description') or '',
+        colour = info.get('color') or discord.Color.blue(),
+        url = info.get('url') or '',
     )
 
     for name, value in fields.items():
-        embed.add_field(name = name, value = value, inline = info.get("inline") or False)
+        embed.add_field(name = name, value = value, inline = info.get('inline') or False)
 
-    if info.get("author"):
+    if info.get('author'):
         author = info.get('author')
         embed.set_author(name = author.name, url = '', icon_url = author.avatar_url)
-    if info.get("footer"):
+    if info.get('footer'):
         embed.set_footer(text = info.footer)
-    if info.get("image"):
+    if info.get('image'):
         embed.set_image(url = info.url)
-    if info.get("thumbnail"):
-        embed.set_thumbnail(url = info.get("thumbnail"))
+    if info.get('thumbnail'):
+        embed.set_thumbnail(url = info.get('thumbnail'))
     
     return embed
 
@@ -164,17 +164,17 @@ def format_time(timestamp):
 
     hours = str(hours)
     if len(hours) == 1:
-        hours = "0" + hours
+        hours = '0' + hours
 
     minutes = str(minutes)
     if len(minutes) == 1:
-        minutes = "0" + minutes
+        minutes = '0' + minutes
 
     seconds = str(seconds)
     if len(seconds) == 1:
-        seconds = "0" + seconds
+        seconds = '0' + seconds
 
-    timestamp_text = f"{hours}:{minutes}:{seconds}"
+    timestamp_text = f'{hours}:{minutes}:{seconds}'
     return timestamp_text
 
 def is_number(s):
@@ -195,7 +195,7 @@ def check_if_bot_manager(context):
 
     guild_data = get_guild_data(context.guild.id)
 
-    bot_manager_id = guild_data["bot_manager"]
+    bot_manager_id = guild_data['bot_manager']
     if not bot_manager_id:
         return False
 
@@ -230,7 +230,7 @@ async def wait_for_reaction(client, context, emoji=None, timeout=30):
                 return True
 
     try:
-        reaction, user = await client.wait_for("reaction_add", check=check_response, timeout=timeout)
+        reaction, user = await client.wait_for('reaction_add', check=check_response, timeout=timeout)
         return reaction, user
     except asyncio.TimeoutError:
         return None, None
@@ -240,7 +240,7 @@ async def wait_for_message(client, context, timeout=30):
         return message.author == context.author
 
     try:
-        message = await client.wait_for("message", check=check_message, timeout=timeout)
+        message = await client.wait_for('message', check=check_message, timeout=timeout)
         return message
     except asyncio.TimeoutError:
         return None

@@ -8,63 +8,63 @@ from helper import create_embed, get_user_data, save_user_data, get_all_guild_da
 from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY, CHANGE_EMOJI
 
 async def get_group_name(group_id: int):
-    url = GROUP_INFO_URL.replace("GROUP_ID", str(group_id))
+    url = GROUP_INFO_URL.replace('GROUP_ID', str(group_id))
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 response_data = await response.json()
-                return response_data.get("name")
+                return response_data.get('name')
 
 async def get_user_groups(user_id: int):
-    url = USER_GROUPS_URL.replace("USER_ID", str(user_id))
+    url = USER_GROUPS_URL.replace('USER_ID', str(user_id))
     groups = []
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 response_data = await response.json()
-                for group_info in response_data["data"]:
-                    group_id = group_info["group"]["id"]
+                for group_info in response_data['data']:
+                    group_id = group_info['group']['id']
                     groups.append(group_id)
                 return groups
 
 async def get_username(user_id: int):
-    url = USER_INFO_URL.replace("USER_ID", str(user_id))
+    url = USER_INFO_URL.replace('USER_ID', str(user_id))
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 response_data = await response.json()
-                return response_data["name"]
+                return response_data['name']
 
 async def get_user_id(username: str):
-    data = {"usernames": [username], "excludeBannedUsers": False}
+    data = {'usernames': [username], 'excludeBannedUsers': False}
     async with aiohttp.ClientSession() as session:
         async with session.post(USERS_URL, data = data) as response:
             if response.status == 200:
                 response_data = await response.json()
-                user = response_data["data"][0]
+                user = response_data['data'][0]
                 if not user:
                     return None
-                return user["id"]
+                return user['id']
 
 async def get_user_description(user_id: int):
-    url = USER_INFO_URL.replace("USER_ID", str(user_id))
+    url = USER_INFO_URL.replace('USER_ID', str(user_id))
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 response_data = await response.json()
-                return response_data["description"]
+                return response_data['description']
 
 async def get_user_status(user_id: int):
-    url = USER_STATUS_URL.replace("USER_ID", str(user_id))
+    url = USER_STATUS_URL.replace('USER_ID', str(user_id))
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 response_data = await response.json()
-                return response_data["status"]
+                return response_data['status']
 
 def generate_random_keywords():
     random_keywords = random.sample(ROBLOX_KEYWORDS, ROBLOX_KEYWORD_COUNT)
-    return " ".join(random_keywords)
+    return ' '.join(random_keywords)
 
 class roblox(commands.Cog):
     def __init__(self, client):
@@ -88,24 +88,24 @@ class roblox(commands.Cog):
         # loop through each guild
         for guild_data in get_all_guild_data():
             # check if guild exists
-            guild = self.client.get_guild(guild_data["guild_id"])
+            guild = self.client.get_guild(guild_data['guild_id'])
             if not guild:
                 continue
 
             # get guild's roblox groups
-            groups = guild_data["roblox_groups"]
+            groups = guild_data['roblox_groups']
             if not groups or len(groups) == 0:
                 continue
 
             # loop through each user in guild
             for user_data in get_all_user_data():
                 # check if user exists
-                user = guild.get_member(user_data["user_id"])
+                user = guild.get_member(user_data['user_id'])
                 if not user:
                     continue
 
                 # check if roblox user exists
-                roblox_user_id = user_data.get("roblox_account_id")
+                roblox_user_id = user_data.get('roblox_account_id')
                 if not roblox_user_id:
                     continue
 
@@ -120,7 +120,7 @@ class roblox(commands.Cog):
                     if not user_group_id in groups:
                         continue
                     
-                    if user_group_id in user_data["roblox_groups"]:
+                    if user_group_id in user_data['roblox_groups']:
                         continue
 
                     # check if group exists
@@ -129,15 +129,15 @@ class roblox(commands.Cog):
                         continue
 
                     # award user
-                    user_data["points"] += guild_data["group_award"]
-                    user_data["roblox_groups"].append(user_group_id)
+                    user_data['points'] += guild_data['group_award']
+                    user_data['roblox_groups'].append(user_group_id)
 
                     try:
                         await user.send(embed = create_embed({
-                            "title": "You earned {} points for joining {}".format(guild_data["group_award"], group_name),
+                            'title': 'You earned {} points for joining {}'.format(guild_data['group_award'], group_name),
                         }))
                     except discord.Forbidden:
-                        print("Cannot tell {} that they earned {} points for joining roblox group {}".format(user, guild_data["group_award"], group_name))
+                        print('Cannot tell {} that they earned {} points for joining roblox group {}'.format(user, guild_data['group_award'], group_name))
 
                 save_user_data(user_data)
 
@@ -148,7 +148,7 @@ class roblox(commands.Cog):
         # loop through each guild
         for guild_data in get_all_guild_data():
             # check if guild exists
-            guild = self.client.get_guild(guild_data["guild_id"])
+            guild = self.client.get_guild(guild_data['guild_id'])
             if not guild:
                 continue
 
@@ -157,7 +157,7 @@ class roblox(commands.Cog):
                 user_data = get_user_data(user.id)
 
                 # check if user has a roblox account
-                roblox_user_id = user_data["roblox_account_id"]
+                roblox_user_id = user_data['roblox_account_id']
                 if not roblox_user_id:
                     continue
 
@@ -168,9 +168,9 @@ class roblox(commands.Cog):
                 for game_id, player_ids in self.players.items():
                     if str(roblox_user_id) in player_ids:
                         # check if game is a guild game
-                        if int(game_id) in guild_data["roblox_games"]:
-                            user_data["points"] += guild_data["game_award"]
-                            print("Gave {} {} points for playing {}".format(user, guild_data["game_award"], game_id))
+                        if int(game_id) in guild_data['roblox_games']:
+                            user_data['points'] += guild_data['game_award']
+                            print('Gave {} {} points for playing {}'.format(user, guild_data['game_award'], game_id))
                             break
 
                 save_user_data(user_data)
@@ -180,17 +180,17 @@ class roblox(commands.Cog):
         if not message.guild or message.channel.id != REQUESTS_CHANNEL or not message.author.bot:
             return
 
-        fields = message.content.split("/")
-        status = fields[0].split("=")[1]
-        player_id = fields[1].split("=")[1]
-        place_id = fields[2].split("=")[1]
+        fields = message.content.split('/')
+        status = fields[0].split('=')[1]
+        player_id = fields[1].split('=')[1]
+        place_id = fields[2].split('=')[1]
 
-        if status == "player_joined":
+        if status == 'player_joined':
             if not self.players.get(place_id):
                 self.players[place_id] = [player_id]
             else:
                 self.players[place_id].append(player_id)
-        elif status == "player_left":
+        elif status == 'player_left':
             if self.players.get(place_id) and player_id in self.players[place_id]:
                 self.players[place_id].remove(player_id)
                 if len(self.players[place_id]) == 0:
@@ -199,26 +199,26 @@ class roblox(commands.Cog):
     @commands.command()
     async def link(self, context):
         response = await context.send(embed = create_embed({
-            "title": f"Retrieving your roblox account...",
-            "color": discord.Color.gold()
+            'title': f'Retrieving your roblox account...',
+            'color': discord.Color.gold()
         }))
 
         try:
             # get roblox account
             user_data = get_user_data(context.author.id)
-            roblox_account_id = user_data["roblox_account_id"]
+            roblox_account_id = user_data['roblox_account_id']
             roblox_account_username = roblox_account_id and await get_username(roblox_account_id)
             await response.add_reaction(CHANGE_EMOJI)
             await response.edit(embed = create_embed({
-                "title": roblox_account_username and f"Your your roblox account is {roblox_account_username}" or "You do not have a linked roblox account",
-                "description": f"React with {CHANGE_EMOJI} to link a new roblox account"
+                'title': roblox_account_username and f'Your your roblox account is {roblox_account_username}' or 'You do not have a linked roblox account',
+                'description': f'React with {CHANGE_EMOJI} to link a new roblox account'
             }))
 
             # change roblox account
             reaction, user = await self.wait_for_reaction(self.client, context, CHANGE_EMOJI)
             if not reaction:
                 await response.edit(embed = create_embed({
-                    "title": roblox_account_username and f"Your your roblox account is {roblox_account_username}" or "You do not have a linked roblox account",
+                    'title': roblox_account_username and f'Your your roblox account is {roblox_account_username}' or 'You do not have a linked roblox account',
                 }))
                 return
 
@@ -226,20 +226,20 @@ class roblox(commands.Cog):
             if context.guild:
                 await response.clear_reactions()
                 await response.edit(embed = create_embed({
-                    "title": "Enter your roblox username",
-                    "color": discord.Color.gold()
+                    'title': 'Enter your roblox username',
+                    'color': discord.Color.gold()
                 }))
             else:
                 response = await context.send(embed = create_embed({
-                    "title": "Enter your roblox username",
-                    "color": discord.Color.gold()
+                    'title': 'Enter your roblox username',
+                    'color': discord.Color.gold()
                 }))
 
             message = await wait_for_message(self.client, context)
             if not message:
                 await response.edit(embed = create_embed({
-                    "title": "No response sent",
-                    "color": discord.Color.red()
+                    'title': 'No response sent',
+                    'color': discord.Color.red()
                 }))
                 return
 
@@ -250,8 +250,8 @@ class roblox(commands.Cog):
             user_id = await get_user_id(username)
             if not user_id:
                 await response.edit(embed = create_embed({
-                    "title": f"Could not retrieve roblox user {username}",
-                    "color": discord.Color.red()
+                    'title': f'Could not retrieve roblox user {username}',
+                    'color': discord.Color.red()
                 }))
                 return
 
@@ -259,17 +259,17 @@ class roblox(commands.Cog):
             verification_message = generate_random_keywords()
             await response.add_reaction(ACCEPT_EMOJI)
             await response.edit(embed = create_embed({
-                "title": f"Change your user description or status to the following text. React with {ACCEPT_EMOJI} when done",
-                "color": discord.Color.gold()
+                'title': f'Change your user description or status to the following text. React with {ACCEPT_EMOJI} when done',
+                'color': discord.Color.gold()
             }, {
-                "Text": verification_message
+                'Text': verification_message
             }))
 
             reaction, user = await wait_for_reaction(self.client, context, ACCEPT_EMOJI, timeout=300)
             if not reaction:
                 await response.edit(embed = create_embed({
-                    "title": "No response sent",
-                    "color": discord.Color.red()
+                    'title': 'No response sent',
+                    'color': discord.Color.red()
                 }))
                 return
 
@@ -278,27 +278,27 @@ class roblox(commands.Cog):
 
             is_verified = verification_message in await get_user_description(user_id) or verification_message in await get_user_status(user_id)
             if is_verified:
-                user_data["roblox_account_id"] = user_id
+                user_data['roblox_account_id'] = user_id
                 save_user_data(user_data)
 
                 await response.edit(embed = create_embed({
-                    "title": f"Linked discord account {context.author} to roblox account {username}",
-                    "color": discord.Color.green()
+                    'title': f'Linked discord account {context.author} to roblox account {username}',
+                    'color': discord.Color.green()
                 }))
             else:
                 await response.edit(embed = create_embed({
-                    "title": f"Could not find verification message in {username}'s status or description",
-                    "color": discord.Color.red()
+                    'title': f'Could not find verification message in {username}\'s status or description',
+                    'color': discord.Color.red()
                 }))
         except Exception as error_message:
             import traceback
             traceback.print_exc()
 
             await response.edit(embed = create_embed({
-                "title": f"Could not retrieve your roblox account",
-                "color": discord.Color.red()
+                'title': f'Could not retrieve your roblox account',
+                'color': discord.Color.red()
             }, {
-                "Error Message": error_message
+                'Error Message': error_message
             }))
 
 def setup(client):
