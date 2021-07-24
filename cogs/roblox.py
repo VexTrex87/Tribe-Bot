@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands, tasks
 import aiohttp
 import random
-import asyncio
 
 from helper import create_embed, get_user_data, save_user_data, get_all_guild_data, get_all_user_data, wait_for_message, wait_for_reaction
 from constants import GROUP_INFO_URL, USER_GROUPS_URL, USER_INFO_URL, USER_STATUS_URL, USERS_URL, ROBLOX_KEYWORD_COUNT, ROBLOX_KEYWORDS, ACCEPT_EMOJI, GROUPS_UPDATE_DELAY, REQUESTS_CHANNEL, GAMES_UPDATE_DELAY, CHANGE_EMOJI

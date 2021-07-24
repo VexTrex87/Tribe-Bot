@@ -5,7 +5,7 @@ import math
 from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager, sort_dictionary
 from constants import MAX_LEADERBOARD_FIELDS
 
-class points(commands.Cog, description = 'Commands for managing, earning, and viewing points.'):
+class points(commands.Cog):
     def __init__(self, client):
         self.client = client
 

@@ -3,11 +3,16 @@ from discord.ext import commands
 import os
 import sys
 from helper import create_embed, check_if_bot_manager, wait_for_reaction
-from constants import ACCEPT_EMOJI
+from constants import ACCEPT_EMOJI, DEFAULT_ACTIVITY
 
-class bot(commands.Cog, description = 'Commands for managing the bot.'):
+class bot(commands.Cog):
     def __init__(self, client):
         self.client = client
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        if DEFAULT_ACTIVITY:
+            await self.client.change_presence(activity=discord.Game(name=DEFAULT_ACTIVITY))
 
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
@@ -85,6 +90,31 @@ class bot(commands.Cog, description = 'Commands for managing the bot.'):
         except Exception as error_message:
             await response.edit(embed=create_embed({
                 'title': 'Could not restart bot',
+                'color': discord.Color.red()
+            }, {
+                'Error Message': error_message
+            }))
+
+    @commands.command()
+    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
+    async def changeactivity(self, context, *, value: str = None):
+        if value.lower() == 'none':
+            value = None
+
+        response = await context.send(embed = create_embed({
+            'title': f'Changing bot\'s activity to {value}...',
+            'color': discord.Color.gold()
+        }))
+
+        try:
+            await self.client.change_presence(activity=discord.Game(name=value or DEFAULT_ACTIVITY))
+            await response.edit(embed=create_embed({
+                'title': f'Changed bot\'s activity to {value}',
+                'color': discord.Color.green()
+            }))
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                'title': f'Could not change bot\'s activity to {value}',
                 'color': discord.Color.red()
             }, {
                 'Error Message': error_message

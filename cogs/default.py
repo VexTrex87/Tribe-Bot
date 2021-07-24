@@ -3,10 +3,9 @@ from discord.ext import commands
 import time
 import asyncio
 import traceback
-import random
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, DEFAULT_ACTIVITY, EIGHTBALL_RESPONSES, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -554,41 +553,11 @@ class change_settings():
             }, guild_data))
             return guild_data, new_guild_data
 
-class default(commands.Cog, description = 'Default commands and commands for settings.'):
+class default(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.uptime = time.time()
  
-    @commands.Cog.listener()
-    async def on_ready(self):
-        if DEFAULT_ACTIVITY:
-            await self.client.change_presence(activity=discord.Game(name=DEFAULT_ACTIVITY))
-
-    @commands.command()
-    @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
-    async def changeactivity(self, context, *, value: str = None):
-        if value.lower() == 'none':
-            value = None
-
-        response = await context.send(embed = create_embed({
-            'title': f'Changing bot\'s activity to {value}...',
-            'color': discord.Color.gold()
-        }))
-
-        try:
-            await self.client.change_presence(activity=discord.Game(name=value or DEFAULT_ACTIVITY))
-            await response.edit(embed=create_embed({
-                'title': f'Changed bot\'s activity to {value}',
-                'color': discord.Color.green()
-            }))
-        except Exception as error_message:
-            await response.edit(embed=create_embed({
-                'title': f'Could not change bot\'s activity to {value}',
-                'color': discord.Color.red()
-            }, {
-                'Error Message': error_message
-            }))
-
     @commands.command()
     async def info(self, context):
         response = await context.send(embed = create_embed({
@@ -805,27 +774,6 @@ class default(commands.Cog, description = 'Default commands and commands for set
                 'color': discord.Color.red()
             }, {
                 'Error Message': error_message
-            }))
-
-    @commands.command(aliases = ['8ball'])
-    async def eightball(self, context, *, question: str):
-        response = await context.send(embed = create_embed({
-            'title': 'Loading response...',
-            'color': discord.Color.gold()   
-        }))
-
-        try:
-            answer = random.choice(EIGHTBALL_RESPONSES)
-            await response.edit(embed = create_embed({
-                'title': answer
-            }))
-        except Exception as error_message:
-            await response.edit(embed = create_embed({
-                'title': 'Could not load response',
-                'color': discord.Color.red()
-            }, {
-                'Error Message': error_message,
-                'Question': question,
             }))
 
     @commands.command()

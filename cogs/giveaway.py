@@ -119,7 +119,7 @@ class get_giveaway_data():
         await self.response.clear_reactions()
         return str(reaction.emoji)
 
-class giveaway(commands.Cog, description = 'Commands for managing and entering giveaways.'):
+class giveaway(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.check_giveaways.start()

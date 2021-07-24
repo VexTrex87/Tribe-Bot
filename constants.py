@@ -1,9 +1,10 @@
 EXTENSIONS = [
-    'events',
     'bot',
     'default',
-    'points',
+    'events',
+    'fun',
     'giveaway',
+    'points',
     'roblox'
 ]
 
