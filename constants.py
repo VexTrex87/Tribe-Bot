@@ -176,12 +176,12 @@ DEBUG_DATABASE = 'database2'
 CLIENT_ID = 834455533423427584
 
 ACCEPT_EMOJI = '✅'
+DECLINE_EMOJI = '❌'
 NEXT_EMOJI = '▶️'
 BACK_EMOJI = '◀️'
-CHANGE_EMOJI = '⚙️'
-DECLINE_EMOJI = '❌'
 THUMBS_UP = '👍'
 THUMBS_DOWN = '👎'
+CHANGE_EMOJI = '⚙️'
 
 GROUP_INFO_URL = 'https://groups.roblox.com/v1/groups/GROUP_ID'
 USER_GROUPS_URL = 'https://groups.roblox.com/v2/users/USER_ID/groups/roles'
@@ -189,6 +189,11 @@ USER_INFO_URL = 'https://users.roblox.com/v1/users/USER_ID'
 USER_STATUS_URL = 'https://users.roblox.com/v1/users/USER_ID/status'
 USERS_URL = 'https://users.roblox.com/v1/usernames/users'
 COLOR_PALETTE = 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e'
+
+TEST_IMAGE_PATH = 'assets/test_image.png'
+TEST_IMAGE_SHORT_PATH = 'test_image.png'
+TEST_THUMBNAIL_PATH = 'assets/test_thumbnail.png'
+TEST_THUMBNAIL_SHORT_PATH = 'test_thumbnail.png'
 
 MAX_LEADERBOARD_FIELDS = 10
 WAIT_DELAY = 3

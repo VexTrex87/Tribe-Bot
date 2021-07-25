@@ -5,7 +5,7 @@ import asyncio
 import traceback
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS, TEST_IMAGE_PATH, TEST_THUMBNAIL_PATH, TEST_IMAGE_SHORT_PATH, TEST_THUMBNAIL_SHORT_PATH
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -937,11 +937,18 @@ class default(commands.Cog):
             'color': discord.Color.gold(),
         }))
 
-        embed = await context.send(embed=create_embed({
+        embed = await context.send(files=[
+            discord.File(TEST_IMAGE_PATH), 
+            discord.File(TEST_THUMBNAIL_PATH)
+        ], embed=create_embed({
             'title': 'TITLE',
             'description': 'DESCRIPTION',
             'color': discord.Color.default(),
             'author': context.author,
+            'url': '',
+            'footer': 'FOOTER',
+            'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+            'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
         }))
 
         try:
@@ -977,6 +984,10 @@ class default(commands.Cog):
                     'description': 'DESCRIPTION',
                     'color': discord.Color.default(),
                     'author': context.author,
+                    'url': '',
+                    'footer': 'FOOTER',
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
                 }))
 
                 await response.add_reaction(ACCEPT_EMOJI)
@@ -1036,6 +1047,10 @@ class default(commands.Cog):
                     'description': description,
                     'color': discord.Color.default(),
                     'author': context.author,
+                    'url': '',
+                    'footer': 'FOOTER',
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
                 }))
 
                 await response.add_reaction(ACCEPT_EMOJI)
@@ -1099,6 +1114,10 @@ class default(commands.Cog):
                     'description': description,
                     'color': color,
                     'author': context.author,
+                    'url': '',
+                    'footer': 'FOOTER',
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
                 }))
 
                 await response.add_reaction(ACCEPT_EMOJI)
@@ -1150,8 +1169,11 @@ class default(commands.Cog):
                         'title': title,
                         'description': description,
                         'color': color,
-                        'url': url,
                         'author': context.author,
+                        'url': url,
+                        'footer': 'FOOTER',
+                        'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                        'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
                     }))
 
                     await response.add_reaction(ACCEPT_EMOJI)
@@ -1213,6 +1235,10 @@ class default(commands.Cog):
                     'description': description,
                     'color': color,
                     'author': author,
+                    'url': url,
+                    'footer': 'FOOTER',
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
                 }))
                 await message.delete()
 
@@ -1234,10 +1260,220 @@ class default(commands.Cog):
                     break
 
             # set footer
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the footer of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                footer = message.content
+                await message.delete()
+                if footer == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif footer == 'none':
+                    footer = ''
+
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the footer of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another footer'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
 
             # set image
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the image of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                await embed.delete()
+                embed = await context.send(files=[
+                    discord.File(TEST_IMAGE_PATH), 
+                    discord.File(TEST_THUMBNAIL_PATH)
+                ], embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': f'attachment://{TEST_IMAGE_SHORT_PATH}',
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                image = None
+                if message.content == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif message.content == 'none':
+                    image = None
+                elif message.attachments and len(message.attachments) > 0:
+                    image = message.attachments[0].url
+                else:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
+                await message.delete()
+                await embed.delete()
+                embed = await context.send(files=[
+                    discord.File(TEST_THUMBNAIL_PATH)
+                ], embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': image,
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the image of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another image'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
 
             # set thumbnail
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the thumbnail of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                await embed.delete()
+                embed = await context.send(files=[
+                    discord.File(TEST_THUMBNAIL_PATH)
+                ], embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': image,
+                    'thumbnail': f'attachment://{TEST_THUMBNAIL_SHORT_PATH}',
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                thumbnail = None
+                if message.content == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif message.content == 'none':
+                    thumbnail = None
+                elif message.attachments and len(message.attachments) > 0:
+                    thumbnail = message.attachments[0].url
+                else:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+
+                await message.delete()
+                await embed.delete()
+                embed = await context.send(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': image,
+                    'thumbnail': thumbnail,
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the thumbnail of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another thumbnail'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
 
             # add fields
 

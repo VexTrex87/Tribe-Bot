@@ -145,16 +145,16 @@ def create_embed(info: dict = {}, fields: dict = {}):
     )
 
     for name, value in fields.items():
-        embed.add_field(name = name, value = value, inline = info.get('inline') or False)
+        embed.add_field(name=name, value=value, inline=info.get('inline') or False)
 
     if info.get('author'):
-        embed.set_author(name = info['author'].name, url = '', icon_url = info['author'].avatar_url)
+        embed.set_author(name=info['author'].name, url='', icon_url=info['author'].avatar_url)
     if info.get('footer'):
-        embed.set_footer(text = info['footer'])
+        embed.set_footer(text=info['footer'])
     if info.get('image'):
-        embed.set_image(url = info['image'])
+        embed.set_image(url=info['image'])
     if info.get('thumbnail'):
-        embed.set_thumbnail(url = info['thumbnail'])
+        embed.set_thumbnail(url=info['thumbnail'])
     
     return embed
 
