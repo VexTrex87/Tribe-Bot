@@ -1,3 +1,6 @@
+# 3.0.0
+- Added ?embed
+
 # 2.0.0
 - Added ?QOTD
 - Added ?messageleaderboard and ?chanegstatus.
