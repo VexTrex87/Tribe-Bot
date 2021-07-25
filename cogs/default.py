@@ -5,7 +5,7 @@ import asyncio
 import traceback
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -928,6 +928,331 @@ class default(commands.Cog):
 
             print('Could not create suggestion')
             print(error_message)
+
+    @commands.command()
+    @commands.guild_only()
+    async def embed(self, context):
+        response = await context.send(embed=create_embed({
+            'title': 'Creating embed...',
+            'color': discord.Color.gold(),
+        }))
+
+        embed = await context.send(embed=create_embed({
+            'title': 'TITLE',
+            'description': 'DESCRIPTION',
+            'color': discord.Color.default(),
+            'author': context.author,
+        }))
+
+        try:
+            # set title
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the title of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                title = message.content
+                await message.delete()
+                if title == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif title == 'none':
+                    title = ''
+
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': 'DESCRIPTION',
+                    'color': discord.Color.default(),
+                    'author': context.author,
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the title of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another title'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
+
+            # set description
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the description of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                description = message.content
+                await message.delete()
+                if description == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif description == 'none':
+                    if title == '':
+                        await response.edit(embed=create_embed({
+                            'title': 'Since the embed does not have a title, a description is required',
+                            'color': discord.Color.red(),
+                        }))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        description = ''
+
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': discord.Color.default(),
+                    'author': context.author,
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the description of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another description'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
+
+            # set color
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the color of the embed.',
+                    'description': 'View supported colors by pressing the link above. Type "default" to use blue. Type "cancel" to stop the process.',
+                    'url': 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                color = message.content
+                await message.delete()
+                if color == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif color != 'default' and not SUPPORTED_COLORS.get(color):
+                    await response.edit(embed=create_embed({
+                        'title': f'{color} is not a supported color',
+                        'description': 'View supported colors by pressing the link above',
+                        'url': 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e',
+                        'color': discord.Color.red(),
+                    }))
+                    await asyncio.sleep(WAIT_DELAY)
+                    continue
+                elif color == 'default':
+                    color = discord.Color.default()
+                else:
+                    color = SUPPORTED_COLORS[color]
+
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                }))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the color of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another color'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
+
+            # set url
+            if title != '':
+                while True:
+                    await response.edit(embed=create_embed({
+                        'title': 'Enter the url of the embed',
+                        'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                        'color': discord.Color.gold()
+                    }))
+
+                    message = await wait_for_message(self.client, context, timeout=120)
+                    if not message:
+                        await response.edit(embed=create_embed({
+                            'title': 'No response',
+                            'color': discord.Color.red(),
+                        }))
+                        return
+
+                    url = message.content
+                    await message.delete()
+                    if url == 'cancel':
+                        await response.edit(embed=create_embed({
+                            'title': 'Process canceled',
+                            'color': discord.Color.red(),
+                        }))
+                        return
+                    elif url == 'none':
+                        url = ''
+
+                    await embed.edit(embed=create_embed({
+                        'title': title,
+                        'description': description,
+                        'color': color,
+                        'url': url,
+                        'author': context.author,
+                    }))
+
+                    await response.add_reaction(ACCEPT_EMOJI)
+                    await response.add_reaction(DECLINE_EMOJI)
+                    await response.edit(embed=create_embed({
+                        'title': f'This is what the url of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another url'
+                    }))
+
+                    reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                    await response.clear_reactions()
+                    if not reaction:
+                        await response.edit(embed=create_embed({
+                            'title': 'No response',
+                            'color': discord.Color.red(),
+                        }))
+                        return
+                    elif reaction.emoji == ACCEPT_EMOJI:
+                        break
+
+            # set author
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the author of the embed',
+                    'description': 'Type "none" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                author = message.content
+                if author == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif author == 'none':
+                    author = None
+                else:
+                    user = get_object(context.guild.members, author)
+                    if not author:
+                        await response.edit(embed=create_embed({
+                            'title': f'Could not fine member {user}',
+                            'color': discord.Color.red(),
+                        }))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        author = user
+
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': author,
+                }))
+                await message.delete()
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the author of the embed looks like. React with {ACCEPT_EMOJI} to continue or {DECLINE_EMOJI} to enter another author'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    break
+
+            # set footer
+
+            # set image
+
+            # set thumbnail
+
+            # add fields
+
+            # response
+            await response.edit(embed=create_embed({
+                'title': 'Embed created',
+                'color': discord.Color.green()
+            }))
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                'title': 'Could not create embed',
+                'color': discord.Color.gold()
+            }, {
+                'Error Message': error_message,
+            }))
 
 def setup(client):
     client.add_cog(default(client))

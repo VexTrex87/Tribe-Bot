@@ -114,7 +114,9 @@ def delete_giveaway(message_id: int):
 def get_object(objects: list, value):
     for obj in objects:
         try:
-            if obj.name == value or value == obj.mention or obj.id == int(value):
+            if obj.name == value or value == obj.mention or str(obj.id) in value:
+                return obj
+            elif obj.id == int(value): # will most likely error
                 return obj
         except:
             pass
@@ -146,14 +148,13 @@ def create_embed(info: dict = {}, fields: dict = {}):
         embed.add_field(name = name, value = value, inline = info.get('inline') or False)
 
     if info.get('author'):
-        author = info.get('author')
-        embed.set_author(name = author.name, url = '', icon_url = author.avatar_url)
+        embed.set_author(name = info['author'].name, url = '', icon_url = info['author'].avatar_url)
     if info.get('footer'):
-        embed.set_footer(text = info.footer)
+        embed.set_footer(text = info['footer'])
     if info.get('image'):
-        embed.set_image(url = info.url)
+        embed.set_image(url = info['image'])
     if info.get('thumbnail'):
-        embed.set_thumbnail(url = info.get('thumbnail'))
+        embed.set_thumbnail(url = info['thumbnail'])
     
     return embed
 
