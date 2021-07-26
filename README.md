@@ -1,5 +1,6 @@
 # 3.0.0
-- Added ?embed
+- Added ?embed, ?resetqotd.
+- Added support for insensitive command inputs.
 
 # 2.0.0
 - Added ?QOTD

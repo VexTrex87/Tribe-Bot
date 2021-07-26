@@ -2,8 +2,8 @@ import discord
 from discord.ext import commands
 import time
 import math
-from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager, sort_dictionary
-from constants import MAX_LEADERBOARD_FIELDS
+from helper import get_user_data, save_user_data, get_all_user_data, get_guild_data, create_embed, check_if_bot_manager, sort_dictionary, wait_for_reaction, get_all_user_data
+from constants import MAX_LEADERBOARD_FIELDS, ACCEPT_EMOJI
 
 class points(commands.Cog):
     def __init__(self, client):
@@ -227,6 +227,45 @@ class points(commands.Cog):
         await context.send(embed = create_embed({
             'title': f'You earned {points_to_give} points for answering the QOTD',
         }))
+
+    @commands.command()
+    @commands.check(check_if_bot_manager)
+    @commands.guild_only()
+    async def resetqotd(self, context):
+        response = await context.send(embed=create_embed({
+            'title': 'Are you sure you want to manually reset everyone\'s QOTD status',
+            'description': 'Members would be able to earn points by running ?qotd without an actual QOTD being published',
+            'color': discord.Color.gold()
+        }))
+
+        try:
+            await response.add_reaction(ACCEPT_EMOJI)
+            reaction, user = await wait_for_reaction(self.client, context, ACCEPT_EMOJI)
+            if not reaction:
+                await response.edit(embed=create_embed({
+                    'title': 'Process canceled',
+                    'color': discord.Color.red()
+                }))
+                return
+
+            await response.edit(embed = create_embed({
+                'title': 'Resetting QOTD...',
+                'color': discord.Color.green()
+            }))
+
+            for user_data in get_all_user_data():
+                if context.guild.get_member(user_data['user_id']):
+                    user_id = user_data['user_id']
+                    print(f'Resetted {user_id}\'s QOTD status')
+                    user_data['answered_qotd'] = False
+                    save_user_data(user_data)
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                'title': 'Could not reset QOTD',
+                'color': discord.Color.red()
+            }, {
+                'Error Message': error_message,
+            }))
 
 def setup(client):
     client.add_cog(points(client))
