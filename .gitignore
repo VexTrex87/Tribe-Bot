@@ -1,6 +1,5 @@
-*.pyc
-/.vscode
-/__pycache__
-*/__pycache__
 *~
-*.swp
+*.pyc
+*.un
+/.vscode
+.env

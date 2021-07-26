@@ -1,3 +1,5 @@
+import discord
+
 EXTENSIONS = [
     'bot',
     'default',
@@ -138,24 +140,60 @@ ROBLOX_KEYWORDS = [
     'yogurt',
 ]
 
+SUPPORTED_COLORS = {
+    'teal': discord.Color.teal(),
+	'dark_teal': discord.Color.dark_teal(),
+	'green': discord.Color.green(),
+	'dark_green': discord.Color.dark_green(),
+	'blue': discord.Color.blue(),
+	'dark_blue': discord.Color.dark_blue(),
+	'purple': discord.Color.purple(),
+	'dark_purple': discord.Color.dark_purple(),
+	'magenta': discord.Color.magenta(),
+	'dark_magenta': discord.Color.dark_magenta(),
+	'gold': discord.Color.gold(),
+	'dark_gold': discord.Color.dark_gold(),
+	'orange': discord.Color.orange(),
+	'dark_orange': discord.Color.dark_orange(),
+	'red': discord.Color.red(),
+	'dark_red': discord.Color.dark_red(),
+	'lighter_grey': discord.Color.lighter_grey(),
+	'lighter_gray': discord.Color.lighter_gray(),
+	'dark_grey': discord.Color.dark_grey(),
+	'dark_gray': discord.Color.dark_gray(),
+	'light_grey': discord.Color.light_grey(),
+	'light_gray': discord.Color.light_gray(),
+	'darker_grey': discord.Color.darker_grey(),
+	'darker_gray': discord.Color.darker_gray(),
+	'blurple': discord.Color.blurple(),
+	'greyple': discord.Color.greyple(),
+	'dark_theme': discord.Color.dark_theme(),
+}
+
 DEFAULT_ACTIVITY = '?help'
 PRODUCTION_DATABASE = 'database1'
 DEBUG_DATABASE = 'database2'
 CLIENT_ID = 834455533423427584
 
 ACCEPT_EMOJI = '✅'
+DECLINE_EMOJI = '❌'
 NEXT_EMOJI = '▶️'
 BACK_EMOJI = '◀️'
-CHANGE_EMOJI = '⚙️'
-DECLINE_EMOJI = '❌'
 THUMBS_UP = '👍'
 THUMBS_DOWN = '👎'
+CHANGE_EMOJI = '⚙️'
 
 GROUP_INFO_URL = 'https://groups.roblox.com/v1/groups/GROUP_ID'
 USER_GROUPS_URL = 'https://groups.roblox.com/v2/users/USER_ID/groups/roles'
 USER_INFO_URL = 'https://users.roblox.com/v1/users/USER_ID'
 USER_STATUS_URL = 'https://users.roblox.com/v1/users/USER_ID/status'
 USERS_URL = 'https://users.roblox.com/v1/usernames/users'
+COLOR_PALETTE = 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e'
+
+TEST_IMAGE_PATH = 'assets/test_image.png'
+TEST_IMAGE_SHORT_PATH = 'test_image.png'
+TEST_THUMBNAIL_PATH = 'assets/test_thumbnail.png'
+TEST_THUMBNAIL_SHORT_PATH = 'test_thumbnail.png'
 
 MAX_LEADERBOARD_FIELDS = 10
 WAIT_DELAY = 3

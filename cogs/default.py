@@ -5,7 +5,7 @@ import asyncio
 import traceback
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS, TEST_IMAGE_PATH, TEST_THUMBNAIL_PATH, TEST_IMAGE_SHORT_PATH, TEST_THUMBNAIL_SHORT_PATH
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -928,6 +928,291 @@ class default(commands.Cog):
 
             print('Could not create suggestion')
             print(error_message)
+
+    @commands.command()
+    @commands.guild_only()
+    async def embed(self, context):
+        response = await context.send(embed=create_embed({
+            'title': 'Creating embed...',
+            'color': discord.Color.gold()
+        }))
+
+        async def get_text(title=None, description=None, url=None):
+            await response.edit(embed=create_embed({
+                'title': title,
+                'description': description or 'Type "skip" to skip. Type "cancel" to stop the process.',
+                'url': url,
+                'color': discord.Color.gold()
+            }))
+
+            message = await wait_for_message(self.client, context, timeout=120)
+            if not message:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return 'cancel'
+
+            content = message.content
+            await message.delete()
+            if content == 'cancel':
+                await response.edit(embed=create_embed({
+                    'title': 'Process canceled',
+                    'color': discord.Color.red(),
+                }))
+                return 'cancel'
+            else:
+                return content
+
+        async def get_file(title=None, description=None):
+            await response.edit(embed=create_embed({
+                'title': title,
+                'description': description or 'Type "skip" to skip. Type "cancel" to stop the process.',
+                'color': discord.Color.gold()
+            }))
+
+            message = await wait_for_message(self.client, context, timeout=120)
+            if not message:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            content = message.content
+            attachments = message.attachments
+            await message.delete()
+
+            if content == 'cancel':
+                await response.edit(embed=create_embed({
+                    'title': 'Process canceled',
+                    'color': discord.Color.red(),
+                }))
+                return 'cancel'
+            elif content == 'skip':
+                return 'skip'
+            elif attachments and len(attachments) > 0:
+                return attachments[0].url
+
+        try:
+            properties = {}
+            fields = {}
+
+            # title
+            title = await get_text('Enter the title of the embed')
+            if title == 'cancel':
+                return
+            elif len(title) >= 256:
+                await response.edit(embed=create_embed({
+                    'title': 'Title is longer than 256 characters',
+                    'color': discord.Color.red()
+                }))
+                return
+            elif title != 'skip':
+                properties['title'] = title
+
+            # description
+            description = await get_text('Enter the description of the embed')
+            if description == 'cancel':
+                return
+            elif description == 'skip':
+                if not properties.get('title'):
+                    await response.edit(embed=create_embed({
+                        'title': 'Since there is no title, a description is required',
+                        'color': discord.Color.red()
+                    }))
+                    return
+            elif len(description) >= 4096:
+                await response.edit(embed=create_embed({
+                    'title': 'Description is longer than 4096 characters',
+                    'color': discord.Color.red()
+                }))
+                return
+            else:
+                properties['description'] = description
+
+            # color
+            color = await get_text('Enter the color of the embed', 'View supported colors by pressing the link above. Type "skip" to use the default color. Type "cancel" to stop the process.', 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e')
+            if color == 'cancel':
+                return
+            elif color == 'skip':
+                color = discord.Color.default()
+            elif not SUPPORTED_COLORS.get(color):
+                await response.edit(embed=create_embed({
+                    'title': f'{color} is not a supported color',
+                    'description': 'View supported colors by pressing the link above',
+                    'url': 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e',
+                    'color': discord.Color.red()
+                }))
+                return
+            else:
+                properties['color'] = SUPPORTED_COLORS.get(color)
+
+            # url
+            if properties['title'] != '':
+                url = await get_text('Enter the url of the embed')
+                if url == 'cancel':
+                    return
+                elif url != 'skip':
+                    if not url.startswith('http'):
+                        await response.edit(embed=create_embed({
+                            'title': f'{url} is is an invalud url',
+                            'color': discord.Color.red()
+                        }))
+                        return
+                    else:
+                        properties['url'] = url
+
+            # author
+            author = await get_text('Enter the author of the embed')
+            if author == 'cancel':
+                return
+            elif author != 'skip':
+                user = get_object(context.guild.members, author)
+                if not user:
+                    await response.edit(embed=create_embed({
+                        'title': f'Could not find member {author}',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                else:
+                    properties['author'] = user
+
+            # footer
+            footer = await get_text('Enter the footer of the embed')
+            if footer == 'cancel':
+                return
+            elif len(footer) >= 2048:
+                await response.edit(embed=create_embed({
+                    'title': 'Footer is longer than 2048 characters',
+                    'color': discord.Color.red()
+                }))
+                return
+            elif title != 'skip':
+                properties['footer'] = footer
+
+            # image
+            image = await get_file('Enter the image of the embed.')
+            if image == 'cancel':
+                return
+            elif not image:
+                await response.edit(embed=create_embed({
+                    'title': f'Invalid Image',
+                    'color': discord.Color.red(),
+                }))
+                return
+            elif image == 'skip':
+                pass
+            elif not image.endswith('.png'):
+                await response.edit(embed=create_embed({
+                    'title': f'Invalid Image Format',
+                    'color': discord.Color.red(),
+                }))
+                return
+            else:
+                properties['image'] = image
+
+            # thumbnail
+            thumbnail = await get_file('Enter the thumbnail of the embed.')
+            if thumbnail == 'cancel':
+                return
+            elif not thumbnail:
+                await response.edit(embed=create_embed({
+                    'title': f'Invalid Image',
+                    'color': discord.Color.red(),
+                }))
+                return
+            elif thumbnail == 'skip':
+                pass
+            elif not thumbnail.endswith('.png'):
+                await response.edit(embed=create_embed({
+                    'title': f'Invalid Image Format',
+                    'color': discord.Color.red(),
+                }))
+                return
+            else:
+                properties['thumbnail'] = thumbnail
+
+            # fields
+            while True:
+                field_name = await get_text('Enter the name of a field')
+                if field_name == 'cancel':
+                    return
+                elif field_name == 'skip':
+                    break
+                elif len(field_name) >= 256:
+                    await response.edit(embed=create_embed({
+                        'title': 'Name is longer than 256 characters',
+                        'color': discord.Color.red()
+                    }))
+                    return
+                else:
+                    field_value = await get_text('Enter the value of a field', 'Type "cancel" to stop the process.')
+                    if field_value == 'cancel':
+                        return
+                    elif len(field_value) >= 1024:
+                            await response.edit(embed=create_embed({
+                                'title': 'Value is longer than 1024 characters',
+                                'color': discord.Color.red()
+                            }))
+                            return
+                    else:
+                        fields[field_name] = field_value
+
+            # channel
+            channel = await get_text('Enter the channel you want to send the embed to.', 'Type "skip" to send in this channel. Type "cancel" to stop the process.')
+            if channel == 'cancel':
+                return
+            elif channel == 'skip':
+                channel = context.channel
+            elif channel != 'skip':
+                located_channel = get_object(context.guild.text_channels, channel)
+                if located_channel:
+                    channel = located_channel
+                else:
+                    await response.edit(embed=create_embed({
+                        'title': f'Could not find channel {channel}',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+            # preview & send
+            preview = await context.send(embed=create_embed(properties, fields))
+
+            await response.add_reaction(ACCEPT_EMOJI)
+            await response.add_reaction(DECLINE_EMOJI)
+            await response.edit(embed=create_embed({
+                'title': f'This is a preview of the embed. React with {ACCEPT_EMOJI} to send the embed in #{channel.name} or {DECLINE_EMOJI} to cancel'
+            }))
+
+            reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=60)
+            await response.clear_reactions()
+            await preview.delete()
+            if not reaction:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return
+            elif reaction.emoji == DECLINE_EMOJI:
+                await response.edit(embed=create_embed({
+                    'title': 'Process canceled',
+                    'color': discord.Color.red(),
+                }))
+                return
+
+            await channel.send(embed=create_embed(properties, fields))
+            await response.edit(embed=create_embed({
+                'title': f'Embed sent in #{channel.name}',
+                'color': discord.Color.green()
+            }))
+        except Exception as error_message:
+            await response.edit(embed=create_embed({
+                'title': 'Could not create embed',
+                'color': discord.Color.red()
+            }, {
+                'Error Message': error_message
+            }))
 
 def setup(client):
     client.add_cog(default(client))
