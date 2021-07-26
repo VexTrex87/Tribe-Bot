@@ -255,10 +255,11 @@ class points(commands.Cog):
 
             for user_data in get_all_user_data():
                 if context.guild.get_member(user_data['user_id']):
-                    user_id = user_data['user_id']
-                    print(f'Resetted {user_id}\'s QOTD status')
                     user_data['answered_qotd'] = False
                     save_user_data(user_data)
+
+                    user_id = user_data['user_id']
+                    print(f'{user} manually resetted {user_id}\'s QOTD status')
         except Exception as error_message:
             await response.edit(embed=create_embed({
                 'title': 'Could not reset QOTD',
