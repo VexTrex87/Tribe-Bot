@@ -9,11 +9,6 @@ class bot(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        if DEFAULT_ACTIVITY:
-            await self.client.change_presence(activity=discord.Game(name=DEFAULT_ACTIVITY))
-
     @commands.command()
     @commands.check_any(commands.is_owner(), commands.check(check_if_bot_manager))
     async def run(self, context, *, code):
