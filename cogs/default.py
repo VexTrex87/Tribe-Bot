@@ -1476,16 +1476,198 @@ class default(commands.Cog):
                     break
 
             # add fields
+            field_inline = None
+            fields = {}
+            while True:
+                # add field name
+                await response.edit(embed=create_embed({
+                    'title': 'Enter the name of the field',
+                    'description': 'Type "skip" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                field_name = message.content
+                await message.delete()
+                if field_name == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif field_name == 'skip':
+                    break
+
+                # add field value
+                await response.edit(embed=create_embed({
+                    'title': f'Enter the value of the field {field_name}',
+                    'description': 'Type "skip" to skip. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                field_value = message.content
+                await message.delete()
+                if field_value == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif field_value == 'skip':
+                    break
+
+                # add field inline
+                if field_inline is None:
+                    await response.add_reaction(ACCEPT_EMOJI)
+                    await response.add_reaction(DECLINE_EMOJI)
+                    await response.edit(embed=create_embed({
+                        'title': f'Should all fields be inline?',
+                        'description': f'React with {ACCEPT_EMOJI} for yes or {DECLINE_EMOJI} for no',
+                        'color': discord.Color.gold()
+                    }))
+
+                    reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                    await response.clear_reactions()
+
+                    field_inline = True
+                    if not reaction:
+                        await response.edit(embed=create_embed({
+                            'title': 'No response',
+                            'color': discord.Color.red(),
+                        }))
+                        return
+                    elif reaction.emoji == ACCEPT_EMOJI:
+                        field_inline = True
+                    elif reaction.emoji == DECLINE_EMOJI:
+                        field_inline = False
+
+                fields[field_name] = field_value
+                await embed.edit(embed=create_embed({
+                    'title': title,
+                    'description': description,
+                    'color': color,
+                    'author': context.author,
+                    'url': url,
+                    'footer': footer,
+                    'image': image,
+                    'thumbnail': thumbnail,
+                    'inline': field_inline,
+                }, fields))
+
+                await response.add_reaction(ACCEPT_EMOJI)
+                await response.add_reaction(DECLINE_EMOJI)
+                await response.edit(embed=create_embed({
+                    'title': f'This is what the field of the embed looks like. React with {ACCEPT_EMOJI} to add another field or {DECLINE_EMOJI} to finish setup'
+                }))
+
+                reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+                await response.clear_reactions()
+                if not reaction:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif reaction.emoji == ACCEPT_EMOJI:
+                    continue
+                elif reaction.emoji == DECLINE_EMOJI:
+                    break
+
+            # set channel
+            while True:
+                await response.edit(embed=create_embed({
+                    'title': 'What channel would you like to send this embed in?',
+                    'description': 'Type "skip" to send in this channel. Type "cancel" to stop the process.',
+                    'color': discord.Color.gold()
+                }))
+
+                message = await wait_for_message(self.client, context, timeout=120)
+                if not message:
+                    await response.edit(embed=create_embed({
+                        'title': 'No response',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+
+                channel_name = message.content
+                if channel_name == 'cancel':
+                    await response.edit(embed=create_embed({
+                        'title': 'Process canceled',
+                        'color': discord.Color.red(),
+                    }))
+                    return
+                elif channel_name == 'skip':
+                    channel_name = context.channel
+                else:
+                    channel = get_object(context.guild.text_channels, channel_name)
+                    if not channel:
+                        await response.edit(embed=create_embed({
+                            'title': f'Could not find channel {channel_name}',
+                            'color': discord.Color.red(),
+                        }))
+                        await asyncio.sleep(WAIT_DELAY)
+                        continue
+                    else:
+                        break
+                await message.delete() 
+
+            # verify embed
+            await response.add_reaction(ACCEPT_EMOJI)
+            await response.add_reaction(DECLINE_EMOJI)
+            await response.edit(embed=create_embed({
+                'title': f'This is what the field of the embed looks like. React with {ACCEPT_EMOJI} to send the embed or {DECLINE_EMOJI} to cancel'
+            }))
+
+            reaction, user = await wait_for_reaction(self.client, context, emoji=[ACCEPT_EMOJI, DECLINE_EMOJI], timeout=30)
+            await response.clear_reactions()
+            if not reaction:
+                await response.edit(embed=create_embed({
+                    'title': 'No response',
+                    'color': discord.Color.red(),
+                }))
+                return
+            elif reaction.emoji == DECLINE_EMOJI:
+                await response.edit(embed=create_embed({
+                    'title': 'Process canceled',
+                    'color': discord.Color.red(),
+                }))
+                return
 
             # response
+            await channel.send(embed=create_embed({
+                'title': title,
+                'description': description,
+                'color': color,
+                'author': context.author,
+                'url': url,
+                'footer': footer,
+                'image': image,
+                'thumbnail': thumbnail,
+                'inline': field_inline,
+            }, fields))
             await response.edit(embed=create_embed({
-                'title': 'Embed created',
+                'title': f'Embed sent in #{channel.name}',
                 'color': discord.Color.green()
             }))
         except Exception as error_message:
             await response.edit(embed=create_embed({
                 'title': 'Could not create embed',
-                'color': discord.Color.gold()
+                'color': discord.Color.red()
             }, {
                 'Error Message': error_message,
             }))
