@@ -5,7 +5,7 @@ import asyncio
 import traceback
 
 from helper import get_guild_data, save_guild_data, get_object, create_embed, format_time, is_number, parse_to_timestamp, check_if_bot_manager, sort_dictionary, get_first_n_items, wait_for_reaction, wait_for_message
-from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS, TEST_IMAGE_PATH, TEST_THUMBNAIL_PATH, TEST_IMAGE_SHORT_PATH, TEST_THUMBNAIL_SHORT_PATH
+from constants import CLIENT_ID, COMMANDS, NEXT_EMOJI, BACK_EMOJI, CHANGE_EMOJI, WAIT_DELAY, ACCEPT_EMOJI, MAX_LEADERBOARD_FIELDS, THUMBS_UP, THUMBS_DOWN, DECLINE_EMOJI, COLOR_PALETTE, SUPPORTED_COLORS
 from cogs.roblox import get_group_name
 
 class change_settings():
@@ -1032,7 +1032,7 @@ class default(commands.Cog):
                 properties['description'] = description
 
             # color
-            color = await get_text('Enter the color of the embed', 'View supported colors by pressing the link above. Type "skip" to use the default color. Type "cancel" to stop the process.', 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e')
+            color = await get_text('Enter the color of the embed', 'View supported colors by pressing the link above. Type "skip" to use the default color. Type "cancel" to stop the process.', COLOR_PALETTE)
             if color == 'cancel':
                 return
             elif color == 'skip':
@@ -1041,7 +1041,7 @@ class default(commands.Cog):
                 await response.edit(embed=create_embed({
                     'title': f'{color} is not a supported color',
                     'description': 'View supported colors by pressing the link above',
-                    'url': 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e',
+                    'url': COLOR_PALETTE,
                     'color': discord.Color.red()
                 }))
                 return

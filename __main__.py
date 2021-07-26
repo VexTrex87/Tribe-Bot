@@ -17,19 +17,19 @@ if not TOKEN:
 
 import discord
 from discord.ext import commands
-from constants import EXTENSIONS, DEFAULT_GUILD_DATA
+from constants import EXTENSIONS, DEFAULT_GUILD_DATA, DEFAULT_ACTIVITY
 from helper import create_embed, get_guild_data
 
 async def get_prefix(client, context):
-    if not context.guild:
+    if context.guild:
+        guild_data = get_guild_data(context.guild.id)
+        return guild_data['prefix']
+    else:
         return DEFAULT_GUILD_DATA['prefix']
-
-    guild_data = get_guild_data(context.guild.id)
-    return guild_data['prefix']
 
 intents = discord.Intents.default()
 intents.members = True
-client = commands.Bot(command_prefix = get_prefix, intents = intents)
+client = commands.Bot(activity=discord.Game(name=DEFAULT_ACTIVITY), command_prefix=get_prefix, intents=intents, case_insensitive=True)
 
 @client.command()
 @commands.check_any(commands.is_owner(), commands.has_permissions(administrator = True))
