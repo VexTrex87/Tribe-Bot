@@ -72,5 +72,8 @@ class events(commands.Cog):
                         user_data['answered_qotd'] = False
                         save_user_data(user_data)
 
+                        user_id = user_data['user_id']
+                        print(f'Automatically resetted {user_id}\'s QOTD status')
+
 def setup(client):
     client.add_cog(events(client))
