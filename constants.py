@@ -182,6 +182,7 @@ BACK_EMOJI = '◀️'
 THUMBS_UP = '👍'
 THUMBS_DOWN = '👎'
 CHANGE_EMOJI = '⚙️'
+NUMBER_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
 
 GROUP_INFO_URL = 'https://groups.roblox.com/v1/groups/GROUP_ID'
 USER_GROUPS_URL = 'https://groups.roblox.com/v2/users/USER_ID/groups/roles'
@@ -189,6 +190,7 @@ USER_INFO_URL = 'https://users.roblox.com/v1/users/USER_ID'
 USER_STATUS_URL = 'https://users.roblox.com/v1/users/USER_ID/status'
 USERS_URL = 'https://users.roblox.com/v1/usernames/users'
 COLOR_PALETTE = 'https://gyazo.com/86b4659a58c771689d464d5bbd01fc3e'
+TRIVIA_URL = 'https://opentdb.com/api.php?amount={}&difficulty={}&type={}'
 
 TEST_IMAGE_PATH = 'assets/test_image.png'
 TEST_IMAGE_SHORT_PATH = 'test_image.png'
