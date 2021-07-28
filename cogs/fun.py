@@ -6,7 +6,7 @@ import random
 import aiohttp
 import html
 
-from helper import create_embed
+from helper import create_embed, wait_for_reaction
 from constants import EIGHTBALL_RESPONSES, TRIVIA_URL, NUMBER_EMOJIS
 
 async def trivia(amount, difficulty, type):
@@ -66,18 +66,41 @@ class fun(commands.Cog):
 
         try:
             data = await trivia(1, 'easy', 'multiple')
-            questions = [data['Correct_Answer']] + data['Incorrect_Answers']
+            correct_answer = data['Correct_Answer']
+            answers = [correct_answer] + data['Incorrect_Answers']
 
-            formatted_questions = []
-            for index, question in enumerate(questions):
-                formatted_questions.append(f'{index + 1}. {question}')
+            formatted_answers = []
+            for index, question in enumerate(answers):
+                formatted_answers.append(f'{index + 1}. {question}')
                 await response.add_reaction(NUMBER_EMOJIS[index])
 
             await response.edit(embed=create_embed({
-                'title': data['Question']
+                'title': data['Question'],
+                "Description": 'Answer in 60 seconds',
             }, {
-                '\n'.join(formatted_questions): 'React to answer'
+                data['Category']: '\n'.join(formatted_answers),
             }))
+
+            reaction, user = await wait_for_reaction(self.client, context, emoji=NUMBER_EMOJIS, timeout=60)
+            await response.clear_reactions()
+            
+            index = NUMBER_EMOJIS.index(reaction.emoji)
+            if answers[index] == correct_answer:
+                await response.edit(embed=create_embed({
+                    'title': 'Correct: ' + data['Question'],
+                    'color': discord.Color.green()
+                }, {
+                    data['Category']: '\n'.join(formatted_answers)
+                }))
+            else:
+                await response.edit(embed=create_embed({
+                    'title': 'Incorrect: ' + data['Question'],
+                    'color': discord.Color.red(),
+                    'footer': f'Correct Answer: {correct_answer}'
+                }, {
+                    data['Category']: '\n'.join(formatted_answers)
+                }))
+
         except Exception as error_message:
             await response.edit(embed=create_embed({
                 'title': 'Could not load trivia question',
